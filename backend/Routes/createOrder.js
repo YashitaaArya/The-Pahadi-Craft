@@ -5,27 +5,24 @@ require('dotenv').config();
 
 const router = express.Router();
 
-// Validate environment variables
 const keyId = process.env.RAZORPAY_KEY_ID?.trim();
 const keySecret = process.env.RAZORPAY_KEY_SECRET?.trim();
 
-// Better validation
+let razorpay = null;
 if (!keyId || !keySecret) {
-  throw new Error('Razorpay credentials are missing or invalid in .env file');
+  console.error('⚠️  Razorpay credentials are missing - the /api/create-order route will return an error until RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET are set. Rest of the API is unaffected.');
+} else {
+  razorpay = new Razorpay({ key_id: keyId, key_secret: keySecret });
+  razorpay.orders.all()
+    .then(() => console.log('✅ Razorpay connection successful'))
+    .catch(err => console.error('❌ Razorpay connection failed:', err.message));
 }
 
-// Initialize Razorpay with logging
-const razorpay = new Razorpay({
-  key_id: keyId,
-  key_secret: keySecret,
-});
-
-// Test Razorpay connection
-razorpay.orders.all()
-  .then(() => console.log('✅ Razorpay connection successful'))
-  .catch(err => console.error('❌ Razorpay connection failed:', err.message));
-
 router.post('/', async (req, res) => {
+  if (!razorpay) {
+    return res.status(503).json({ error: 'Payments are not configured yet. Set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET.' });
+  }
+
   const { amount } = req.body;
 
   // console.log("Firebase UID:", firebaseUid);
