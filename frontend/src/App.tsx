@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import MaintenancePage from './pages/MaintenancePage';
 import Navbar from './components/Navbar';
 import Cart from './components/Cart';
 import ContactSlider from './components/ContactSlider';
@@ -66,6 +67,273 @@ const ProtectedAdminRoute: React.FC<ProtectedAdminRouteProps> = ({ children }) =
   return <>{children}</>;
 };
 
+const MAINTENANCE_MODE = import.meta.env.VITE_MAINTENANCE_MODE === 'true';
+
+function AppRoutes() {
+  const location = useLocation();
+  const isAdminRoute = location.pathname.startsWith('/admin');
+
+  if (MAINTENANCE_MODE && !isAdminRoute) {
+    return <MaintenancePage />;
+  }
+
+  return (
+    <Routes>
+      {/* Admin Routes - always accessible, even in maintenance mode */}
+      <Route path="/admin/login" element={<AdminLogin />} />
+      <Route
+        path="/admin/*"
+        element={
+          <ProtectedAdminRoute>
+            <AdminLayout>
+              <Routes>
+                <Route path="/" element={<AdminDashboard />} />
+                {/* Add more admin routes here as you build them */}
+                <Route path="products" element={<ProductManager />} />
+                <Route path="orders" element={<OrderManager />} />
+                <Route path="customers" element={<UserManager />} />
+                <Route path="reviews" element={<div className="text-center py-12">Reviews coming soon...</div>} />
+                <Route path="analytics" element={<div className="text-center py-12">Analytics coming soon...</div>} />
+                <Route path="settings" element={<div className="text-center py-12">Settings coming soon...</div>} />
+              </Routes>
+            </AdminLayout>
+          </ProtectedAdminRoute>
+        }
+      />
+
+      {/* Customer Routes */}
+      <Route
+        path="/"
+        element={
+          <div className="min-h-screen bg-[#FFF8F2]">
+            <Navbar />
+            <Cart />
+            <ContactSlider />
+            <HomePage />
+            <Footer />
+          </div>
+        }
+      />
+      <Route
+        path="/shop"
+        element={
+          <div className="min-h-screen bg-[#FFF8F2]">
+            <Navbar />
+            <Cart />
+            <ContactSlider />
+            <Shop />
+            <Footer />
+          </div>
+        }
+      />
+      <Route
+        path="/about"
+        element={
+          <div className="min-h-screen bg-[#FFF8F2]">
+            <Navbar />
+            <Cart />
+            <ContactSlider />
+            <About />
+            <Footer />
+          </div>
+        }
+      />
+      <Route
+        path="/fragrance-guide"
+        element={
+          <div className="min-h-screen bg-[#FFF8F2]">
+            <Navbar />
+            <Cart />
+            <ContactSlider />
+            <FragranceGuide />
+            <Footer />
+          </div>
+        }
+      />
+      <Route
+        path="/custom-order"
+        element={
+          <div className="min-h-screen bg-[#FFF8F2]">
+            <Navbar />
+            <Cart />
+            <ContactSlider />
+            <CustomOrder />
+            <Footer />
+          </div>
+        }
+      />
+      <Route
+        path="/blog"
+        element={
+          <div className="min-h-screen bg-[#FFF8F2]">
+            <Navbar />
+            <Cart />
+            <ContactSlider />
+            <Blog />
+            <Footer />
+          </div>
+        }
+      />
+      <Route
+        path="/contact"
+        element={
+          <div className="min-h-screen bg-[#FFF8F2]">
+            <Navbar />
+            <Cart />
+            <ContactSlider />
+            <Contact />
+            <Footer />
+          </div>
+        }
+      />
+      <Route
+        path="/auth"
+        element={
+          <div className="min-h-screen bg-[#FFF8F2]">
+            <Navbar />
+            <Cart />
+            <ContactSlider />
+            <Auth />
+            <Footer />
+          </div>
+        }
+      />
+      <Route
+        path="/shipping"
+        element={
+          <div className="min-h-screen bg-[#FFF8F2]">
+            <Navbar />
+            <Cart />
+            <ContactSlider />
+            <Shipping />
+            <Footer />
+          </div>
+        }
+      />
+      <Route
+        path="/returns"
+        element={
+          <div className="min-h-screen bg-[#FFF8F2]">
+            <Navbar />
+            <Cart />
+            <ContactSlider />
+            <Returns />
+            <Footer />
+          </div>
+        }
+      />
+      <Route
+        path="/faq"
+        element={
+          <div className="min-h-screen bg-[#FFF8F2]">
+            <Navbar />
+            <Cart />
+            <ContactSlider />
+            <Faq />
+            <Footer />
+          </div>
+        }
+      />
+      <Route
+        path="/terms-conditions"
+        element={
+          <div className="min-h-screen bg-[#FFF8F2]">
+            <Navbar />
+            <Cart />
+            <ContactSlider />
+            <TermsConditions />
+            <Footer />
+          </div>
+        }
+      />
+      <Route
+        path="/privacy-policy"
+        element={
+          <div className="min-h-screen bg-[#FFF8F2]">
+            <Navbar />
+            <Cart />
+            <ContactSlider />
+            <PrivacyPolicy />
+            <Footer />
+          </div>
+        }
+      />
+      <Route
+        path="/care-guide"
+        element={
+          <div className="min-h-screen bg-[#FFF8F2]">
+            <Navbar />
+            <Cart />
+            <ContactSlider />
+            <CareGuide />
+            <Footer />
+          </div>
+        }
+      />
+      <Route
+        path="/dashboard"
+        element={
+          <div className="min-h-screen bg-[#FFF8F2]">
+            <Navbar />
+            <Cart />
+            <ContactSlider />
+            <Dashboard />
+            <Footer />
+          </div>
+        }
+      />
+      <Route
+        path="/profile"
+        element={
+          <div className="min-h-screen bg-[#FFF8F2]">
+            <Navbar />
+            <Cart />
+            <ContactSlider />
+            <UserProfile />
+            <Footer />
+          </div>
+        }
+      />
+      <Route
+        path="/checkout"
+        element={
+          <div className="min-h-screen bg-[#FFF8F2]">
+            <Navbar />
+            <Cart />
+            <ContactSlider />
+            <Checkout />
+            <Footer />
+          </div>
+        }
+      />
+      <Route
+        path="/special-occult-candles"
+        element={
+          <div className="min-h-screen bg-[#FFF8F2]">
+            <Navbar />
+            <Cart />
+            <ContactSlider />
+            <SpecialOccultCandles />
+            <Footer />
+          </div>
+        }
+      />
+      <Route
+        path="/premium-candles"
+        element={
+          <div className="min-h-screen bg-[#FFF8F2]">
+            <Navbar />
+            <Cart />
+            <ContactSlider />
+            <PremiumCandles />
+            <Footer />
+          </div>
+        }
+      />
+    </Routes>
+  );
+}
+
 function App() {
   // Initialize admin auth on mount
   useEffect(() => {
@@ -75,259 +343,7 @@ function App() {
   return (
     <Router>
       <ToastContainer />
-      <Routes>
-        {/* Admin Routes */}
-        <Route path="/admin/login" element={<AdminLogin />} />
-        <Route
-          path="/admin/*"
-          element={
-            <ProtectedAdminRoute>
-              <AdminLayout>
-                <Routes>
-                  <Route path="/" element={<AdminDashboard />} />
-                  {/* Add more admin routes here as you build them */}
-                  <Route path="products" element={<ProductManager />} />
-                  <Route path="orders" element={<OrderManager />} />
-                  <Route path="customers" element={<UserManager />} />
-                  <Route path="reviews" element={<div className="text-center py-12">Reviews coming soon...</div>} />
-                  <Route path="analytics" element={<div className="text-center py-12">Analytics coming soon...</div>} />
-                  <Route path="settings" element={<div className="text-center py-12">Settings coming soon...</div>} />
-                </Routes>
-              </AdminLayout>
-            </ProtectedAdminRoute>
-          }
-        />
-
-        {/* Customer Routes */}
-        <Route
-          path="/"
-          element={
-            <div className="min-h-screen bg-[#FFF8F2]">
-              <Navbar />
-              <Cart />
-              <ContactSlider />
-              <HomePage />
-              <Footer />
-            </div>
-          }
-        />
-        <Route
-          path="/shop"
-          element={
-            <div className="min-h-screen bg-[#FFF8F2]">
-              <Navbar />
-              <Cart />
-              <ContactSlider />
-              <Shop />
-              <Footer />
-            </div>
-          }
-        />
-        <Route
-          path="/about"
-          element={
-            <div className="min-h-screen bg-[#FFF8F2]">
-              <Navbar />
-              <Cart />
-              <ContactSlider />
-              <About />
-              <Footer />
-            </div>
-          }
-        />
-        <Route
-          path="/fragrance-guide"
-          element={
-            <div className="min-h-screen bg-[#FFF8F2]">
-              <Navbar />
-              <Cart />
-              <ContactSlider />
-              <FragranceGuide />
-              <Footer />
-            </div>
-          }
-        />
-        <Route
-          path="/custom-order"
-          element={
-            <div className="min-h-screen bg-[#FFF8F2]">
-              <Navbar />
-              <Cart />
-              <ContactSlider />
-              <CustomOrder />
-              <Footer />
-            </div>
-          }
-        />
-        <Route
-          path="/blog"
-          element={
-            <div className="min-h-screen bg-[#FFF8F2]">
-              <Navbar />
-              <Cart />
-              <ContactSlider />
-              <Blog />
-              <Footer />
-            </div>
-          }
-        />
-        <Route
-          path="/contact"
-          element={
-            <div className="min-h-screen bg-[#FFF8F2]">
-              <Navbar />
-              <Cart />
-              <ContactSlider />
-              <Contact />
-              <Footer />
-            </div>
-          }
-        />
-        <Route
-          path="/auth"
-          element={
-            <div className="min-h-screen bg-[#FFF8F2]">
-              <Navbar />
-              <Cart />
-              <ContactSlider />
-              <Auth />
-              <Footer />
-            </div>
-          }
-        />
-        <Route
-          path="/shipping"
-          element={
-            <div className="min-h-screen bg-[#FFF8F2]">
-              <Navbar />
-              <Cart />
-              <ContactSlider />
-              <Shipping />
-              <Footer />
-            </div>
-          }
-        />
-        <Route
-          path="/returns"
-          element={
-            <div className="min-h-screen bg-[#FFF8F2]">
-              <Navbar />
-              <Cart />
-              <ContactSlider />
-              <Returns />
-              <Footer />
-            </div>
-          }
-        />
-        <Route
-          path="/faq"
-          element={
-            <div className="min-h-screen bg-[#FFF8F2]">
-              <Navbar />
-              <Cart />
-              <ContactSlider />
-              <Faq />
-              <Footer />
-            </div>
-          }
-        />
-        <Route
-          path="/terms-conditions"
-          element={
-            <div className="min-h-screen bg-[#FFF8F2]">
-              <Navbar />
-              <Cart />
-              <ContactSlider />
-              <TermsConditions />
-              <Footer />
-            </div>
-          }
-        />
-        <Route
-          path="/privacy-policy"
-          element={
-            <div className="min-h-screen bg-[#FFF8F2]">
-              <Navbar />
-              <Cart />
-              <ContactSlider />
-              <PrivacyPolicy />
-              <Footer />
-            </div>
-          }
-        />
-        <Route
-          path="/care-guide"
-          element={
-            <div className="min-h-screen bg-[#FFF8F2]">
-              <Navbar />
-              <Cart />
-              <ContactSlider />
-              <CareGuide />
-              <Footer />
-            </div>
-          }
-        />
-        <Route
-          path="/dashboard"
-          element={
-            <div className="min-h-screen bg-[#FFF8F2]">
-              <Navbar />
-              <Cart />
-              <ContactSlider />
-              <Dashboard />
-              <Footer />
-            </div>
-          }
-        />
-        <Route
-          path="/profile"
-          element={
-            <div className="min-h-screen bg-[#FFF8F2]">
-              <Navbar />
-              <Cart />
-              <ContactSlider />
-              <UserProfile />
-              <Footer />
-            </div>
-          }
-        />
-        <Route
-          path="/checkout"
-          element={
-            <div className="min-h-screen bg-[#FFF8F2]">
-              <Navbar />
-              <Cart />
-              <ContactSlider />
-              <Checkout />
-              <Footer />
-            </div>
-          }
-        />
-        <Route
-          path="/special-occult-candles"
-          element={
-            <div className="min-h-screen bg-[#FFF8F2]">
-              <Navbar />
-              <Cart />
-              <ContactSlider />
-              <SpecialOccultCandles />
-              <Footer />
-            </div>
-          }
-        />
-        <Route
-          path="/premium-candles"
-          element={
-            <div className="min-h-screen bg-[#FFF8F2]">
-              <Navbar />
-              <Cart />
-              <ContactSlider />
-              <PremiumCandles />
-              <Footer />
-            </div>
-          }
-        />
-      </Routes>
+      <AppRoutes />
     </Router>
   );
 }
