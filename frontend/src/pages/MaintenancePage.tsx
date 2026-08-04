@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Flame, Hammer, Sparkles } from 'lucide-react';
+import { Flame, Hammer, Sparkles, Instagram, Youtube, ExternalLink } from 'lucide-react';
 
 const MaintenancePage: React.FC = () => {
   return (
@@ -85,8 +85,56 @@ const MaintenancePage: React.FC = () => {
           initial={{ scaleX: 0 }}
           animate={{ scaleX: 1 }}
           transition={{ duration: 1.2, delay: 0.6, ease: 'easeOut' }}
-          className="h-[2px] bg-gradient-to-r from-transparent via-[#C9A66B] to-transparent mt-8 origin-center"
+          className="h-[2px] bg-gradient-to-r from-transparent via-[#C9A66B] to-transparent mt-8 mb-8 origin-center"
         />
+
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.8 }}
+        >
+          <p className="text-[#7A6355] text-sm mb-4 tracking-wide">
+            While the shelves get their finishing touches, you can still find us here
+          </p>
+
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+            <motion.a
+              href="https://www.pahadicraft.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              whileHover={{ scale: 1.05, y: -2 }}
+              whileTap={{ scale: 0.97 }}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#5A4232] text-[#FFF8F2] text-sm shadow-md hover:shadow-lg transition-shadow"
+            >
+              <ExternalLink size={16} />
+              Shop on pahadicraft.com
+            </motion.a>
+
+            <motion.a
+              href="https://www.instagram.com/pahadi_craft"
+              target="_blank"
+              rel="noopener noreferrer"
+              whileHover={{ scale: 1.05, y: -2 }}
+              whileTap={{ scale: 0.97 }}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-full border border-[#C9A66B] text-[#5A4232] text-sm hover:bg-[#F5E9DA] transition-colors"
+            >
+              <Instagram size={16} />
+              @pahadi_craft
+            </motion.a>
+
+            <motion.a
+              href="https://www.youtube.com/@PahadiCraft"
+              target="_blank"
+              rel="noopener noreferrer"
+              whileHover={{ scale: 1.05, y: -2 }}
+              whileTap={{ scale: 0.97 }}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-full border border-[#C9A66B] text-[#5A4232] text-sm hover:bg-[#F5E9DA] transition-colors"
+            >
+              <Youtube size={16} />
+              Pahadi Craft
+            </motion.a>
+          </div>
+        </motion.div>
       </div>
     </div>
   );
