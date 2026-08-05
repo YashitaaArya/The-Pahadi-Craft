@@ -6,6 +6,7 @@ import { useAdminDashboardStore } from '../../store/adminDashboardStore';
 import { Product } from '../../types';
 import { getDriveImage } from '../../utils/driveImage';
 import { uploadProductImage } from '../../api/adminApi';
+import { compressImage } from '../../utils/compressImage';
 import {
   Modal,
   ConfirmationDialog,
@@ -572,7 +573,8 @@ const ProductManager: React.FC = () => {
                       if (!file) return;
                       setUploadingImage(true);
                       try {
-                        const url = await uploadProductImage(file);
+                        const compressed = await compressImage(file);
+                        const url = await uploadProductImage(compressed);
                         setValue('image', url, { shouldDirty: true });
                         showSuccess('Image uploaded');
                       } catch (err: any) {
@@ -662,7 +664,8 @@ const ProductManager: React.FC = () => {
                     for (let i = 0; i < files.length; i++) {
                       setGalleryUploadProgress(`${i + 1}/${files.length}`);
                       try {
-                        const url = await uploadProductImage(files[i]);
+                        const compressed = await compressImage(files[i]);
+                        const url = await uploadProductImage(compressed);
                         uploaded.push(url);
                       } catch (err: any) {
                         showError(err?.response?.data?.error || `Failed to upload ${files[i].name}`);

@@ -10,7 +10,7 @@ const router = express.Router();
 // we stream it straight to Cloudinary without ever writing it to this server.
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 8 * 1024 * 1024 }, // 8MB per image
+  limits: { fileSize: 15 * 1024 * 1024 }, // 15MB - client-side compression should keep real uploads well under this
 });
 
 const cloudinaryConfigured = !!(
@@ -30,7 +30,17 @@ if (cloudinaryConfigured) {
 }
 
 // POST /api/upload - takes one image file, returns its hosted URL
-router.post('/', adminAuth, requirePermission('products:write'), upload.single('image'), async (req, res) => {
+router.post('/', adminAuth, requirePermission('products:write'), (req, res, next) => {
+  upload.single('image')(req, res, (err) => {
+    if (err) {
+      if (err.code === 'LIMIT_FILE_SIZE') {
+        return res.status(413).json({ error: 'That image is too large (max 15MB). Try a smaller photo.' });
+      }
+      return res.status(400).json({ error: err.message || 'Upload failed' });
+    }
+    next();
+  });
+}, async (req, res) => {
   if (!cloudinaryConfigured) {
     return res.status(503).json({ error: 'Image uploads are not configured yet. Set the CLOUDINARY_* environment variables.' });
   }
