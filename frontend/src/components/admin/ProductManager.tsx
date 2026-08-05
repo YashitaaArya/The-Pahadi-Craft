@@ -67,6 +67,8 @@ const ProductManager: React.FC = () => {
   const [filterCategory, setFilterCategory] = useState<string>('all');
   const [sortBy, setSortBy] = useState<'name' | 'price' | 'stock'>('name');
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [uploadingGalleryImages, setUploadingGalleryImages] = useState(false);
+  const [galleryUploadProgress, setGalleryUploadProgress] = useState('');
 
   // Fetch products on mount
   useEffect(() => {
@@ -597,17 +599,104 @@ const ProductManager: React.FC = () => {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Additional Image URLs
+              Additional Product Images
             </label>
-            <textarea
-              {...register('additionalImagesText')}
-              className="input resize-none"
-              rows={3}
-              placeholder="Enter one image URL per line or comma-separated"
-            />
+
+            {/* Thumbnails of already-added gallery images */}
+            {(() => {
+              const currentUrls = (watch('additionalImagesText') || '')
+                .split(/[\n,]/)
+                .map((u) => u.trim())
+                .filter(Boolean);
+              if (currentUrls.length === 0) return null;
+              return (
+                <div className="flex flex-wrap gap-2 mb-3">
+                  {currentUrls.map((url, idx) => (
+                    <div key={idx} className="relative group">
+                      <img
+                        src={getDriveImage(url)}
+                        alt={`Gallery ${idx + 1}`}
+                        className="w-16 h-16 object-cover rounded-lg border border-gray-200"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const next = currentUrls.filter((_, i) => i !== idx);
+                          setValue('additionalImagesText', next.join('\n'), { shouldDirty: true });
+                        }}
+                        className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                        title="Remove"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              );
+            })()}
+
+            <label className="flex items-center justify-center gap-2 px-4 py-2 border border-[#C9A66B] text-[#5A4232] rounded-lg text-sm cursor-pointer hover:bg-[#F5E9DA] transition-colors w-fit">
+              {uploadingGalleryImages ? (
+                <>
+                  <Loader2 size={16} className="animate-spin" />
+                  Uploading {galleryUploadProgress}...
+                </>
+              ) : (
+                <>
+                  <UploadCloud size={16} />
+                  Upload photos from device
+                </>
+              )}
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                className="hidden"
+                disabled={uploadingGalleryImages}
+                onChange={async (e) => {
+                  const files = Array.from(e.target.files || []);
+                  if (files.length === 0) return;
+                  setUploadingGalleryImages(true);
+                  const uploaded: string[] = [];
+                  try {
+                    for (let i = 0; i < files.length; i++) {
+                      setGalleryUploadProgress(`${i + 1}/${files.length}`);
+                      try {
+                        const url = await uploadProductImage(files[i]);
+                        uploaded.push(url);
+                      } catch (err: any) {
+                        showError(err?.response?.data?.error || `Failed to upload ${files[i].name}`);
+                      }
+                    }
+                    if (uploaded.length > 0) {
+                      const existing = (watch('additionalImagesText') || '')
+                        .split(/[\n,]/)
+                        .map((u) => u.trim())
+                        .filter(Boolean);
+                      setValue('additionalImagesText', [...existing, ...uploaded].join('\n'), { shouldDirty: true });
+                      showSuccess(`Uploaded ${uploaded.length} image${uploaded.length > 1 ? 's' : ''}`);
+                    }
+                  } finally {
+                    setUploadingGalleryImages(false);
+                    setGalleryUploadProgress('');
+                    e.target.value = '';
+                  }
+                }}
+              />
+            </label>
             <p className="text-xs text-gray-500 mt-1">
-              Separate URLs with commas or new lines for multiple product images.
+              You can select multiple photos at once. They'll be added to the gallery above.
             </p>
+
+            <details className="mt-3">
+              <summary className="text-xs text-gray-500 cursor-pointer">Or paste image URLs instead</summary>
+              <textarea
+                {...register('additionalImagesText')}
+                className="input resize-none mt-2"
+                rows={3}
+                placeholder="Enter one image URL per line or comma-separated"
+              />
+            </details>
           </div>
         </form>
       </Modal>
