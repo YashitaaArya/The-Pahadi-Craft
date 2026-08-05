@@ -73,19 +73,15 @@ export const useAdminAuthStore = create<AdminAuthStore>((set, get) => ({
     }
   },
 
-  verifyAdminRole: (requiredRole?: string): boolean => {
+  verifyAdminRole: (requiredPermission?: string): boolean => {
     const { adminUser } = get();
-    
+
     if (!adminUser) return false;
-    
-    // Super admin has access to everything
-    if (adminUser.adminRole === 'super-admin') return true;
-    
-    // Check specific role if required
-    if (requiredRole) {
-      return adminUser.permissions.includes(requiredRole) || adminUser.permissions.includes('all');
+
+    if (requiredPermission) {
+      return adminUser.permissions.includes(requiredPermission) || adminUser.permissions.includes('all');
     }
-    
+
     return true;
   },
 

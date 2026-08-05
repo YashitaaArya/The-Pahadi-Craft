@@ -3,9 +3,10 @@ const router = express.Router();
 const Order = require('../models/order');
 const User = require('../models/User');
 const adminAuth = require('../middleware/adminAuth');
+const requirePermission = require('../middleware/requirePermission');
 
 // GET /api/orders - admin only, lists all orders in the shape the dashboard expects
-router.get('/', adminAuth, async (req, res) => {
+router.get('/', adminAuth, requirePermission('orders:read'), async (req, res) => {
   try {
     const orders = await Order.find().populate('user', 'name email').sort({ createdAt: -1 });
     const formatted = orders.map((o) => {
@@ -41,7 +42,7 @@ router.get('/', adminAuth, async (req, res) => {
 });
 
 // PATCH /api/orders/:id/status - admin only
-router.patch('/:id/status', adminAuth, async (req, res) => {
+router.patch('/:id/status', adminAuth, requirePermission('orders:write'), async (req, res) => {
   try {
     const { status, trackingNumber } = req.body;
     const update = {};

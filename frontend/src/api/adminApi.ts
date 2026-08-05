@@ -83,3 +83,35 @@ export const getBanners = async () => {
   const response = await api.get('/banners');
   return response.data;
 };
+
+// --- Admin team management (developer only) ---
+
+export const getAdminTeam = async () => {
+  const response = await api.get('/admin/team');
+  return response.data;
+};
+
+export const createAdminTeamMember = async (data: {
+  email: string;
+  password: string;
+  name: string;
+  adminRole: 'developer' | 'owner' | 'sales';
+}) => {
+  const response = await api.post('/admin/team', data);
+  return response.data;
+};
+
+export const deleteAdminTeamMember = async (id: string) => {
+  await api.delete(`/admin/team/${id}`);
+};
+
+// --- Product image upload (Cloudinary, via our backend) ---
+
+export const uploadProductImage = async (file: File): Promise<string> => {
+  const formData = new FormData();
+  formData.append('image', file);
+  const response = await api.post('/upload', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return response.data.url;
+};

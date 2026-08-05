@@ -7,10 +7,10 @@ const adminUserSchema = new mongoose.Schema({
   role: { type: String, default: 'admin' }, // matches frontend User.role
   adminRole: {
     type: String,
-    enum: ['super-admin', 'product-manager', 'content-manager'],
-    default: 'super-admin'
+    enum: ['developer', 'owner', 'sales'],
+    default: 'sales'
   },
-  permissions: { type: [String], default: ['all'] },
+  permissions: { type: [String], default: [] }, // legacy field, kept for backward compatibility - not used for enforcement
   lastLogin: { type: Date },
 }, { timestamps: true });
 

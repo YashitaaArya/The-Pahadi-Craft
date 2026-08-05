@@ -35,50 +35,50 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       label: 'Dashboard',
       icon: LayoutDashboard,
       path: '/admin',
-      roles: ['all'],
+      permission: 'analytics:read',
     },
     {
       label: 'Products',
       icon: Package,
       path: '/admin/products',
-      roles: ['super-admin', 'product-manager'],
+      permission: 'products:read',
     },
     {
       label: 'Orders',
       icon: ShoppingCart,
       path: '/admin/orders',
-      roles: ['all'],
+      permission: 'orders:read',
     },
     {
       label: 'Customers',
       icon: Users,
       path: '/admin/customers',
-      roles: ['super-admin'],
+      permission: 'customers:read',
     },
-    // Content section removed by request
     {
       label: 'Reviews',
       icon: MessageSquare,
       path: '/admin/reviews',
-      roles: ['super-admin', 'content-manager'],
+      permission: 'analytics:read',
     },
     {
       label: 'Analytics',
       icon: BarChart3,
       path: '/admin/analytics',
-      roles: ['super-admin'],
+      permission: 'analytics:read',
     },
     {
-      label: 'Settings',
+      label: 'Admin Logins',
       icon: Settings,
       path: '/admin/settings',
-      roles: ['super-admin'],
+      permission: 'admins:manage',
     },
   ];
 
-  // Filter menu items based on user role
+  // Filter menu items based on the logged-in admin's actual permissions
+  const permissions = adminUser?.permissions || [];
   const visibleMenuItems = menuItems.filter(item =>
-    item.roles.includes('all') || item.roles.includes(adminUser?.adminRole || '')
+    permissions.includes('all') || permissions.includes(item.permission)
   );
 
   const handleLogout = async () => {

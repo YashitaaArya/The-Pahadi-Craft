@@ -1,10 +1,11 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Edit2, Trash2, Search, Filter, ChevronDown } from 'lucide-react';
+import { Plus, Edit2, Trash2, Search, Filter, ChevronDown, UploadCloud, Loader2 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { useAdminDashboardStore } from '../../store/adminDashboardStore';
 import { Product } from '../../types';
 import { getDriveImage } from '../../utils/driveImage';
+import { uploadProductImage } from '../../api/adminApi';
 import {
   Modal,
   ConfirmationDialog,
@@ -65,13 +66,14 @@ const ProductManager: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState<string>('all');
   const [sortBy, setSortBy] = useState<'name' | 'price' | 'stock'>('name');
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   // Fetch products on mount
   useEffect(() => {
     fetchProducts();
   }, [fetchProducts]);
 
-  const { register, handleSubmit, reset, watch, formState: { errors } } = useForm<ProductFormData>(
+  const { register, handleSubmit, reset, watch, setValue, formState: { errors } } = useForm<ProductFormData>(
     {
       defaultValues: editingProduct || {
         name: '',
@@ -186,7 +188,7 @@ const ProductManager: React.FC = () => {
       const normalizedImage = getDriveImage(data.image || '');
       const { additionalImagesText, ...rest } = data;
 
-      const payload: Product = {
+      const payload: Omit<Product, 'id'> = {
         ...rest,
         image: normalizedImage,
         additionalImages: parsedAdditionalImages,
@@ -528,17 +530,69 @@ const ProductManager: React.FC = () => {
             </label>
           </div>
 
-          {/* Image URLs */}
+          {/* Product Image */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Product Image URL
+              Product Image
             </label>
-            <input
-              type="url"
-              {...register('image')}
-              className="input"
-              placeholder="https://example.com/image.jpg"
-            />
+            <div className="flex items-start gap-4">
+              {watch('image') ? (
+                <img
+                  src={getDriveImage(watch('image') || '')}
+                  alt="Product preview"
+                  className="w-20 h-20 object-cover rounded-lg border border-gray-200"
+                />
+              ) : (
+                <div className="w-20 h-20 rounded-lg border border-dashed border-gray-300 flex items-center justify-center text-gray-300">
+                  <UploadCloud size={24} />
+                </div>
+              )}
+              <div className="flex-1">
+                <label className="flex items-center justify-center gap-2 px-4 py-2 border border-[#C9A66B] text-[#5A4232] rounded-lg text-sm cursor-pointer hover:bg-[#F5E9DA] transition-colors w-fit">
+                  {uploadingImage ? (
+                    <>
+                      <Loader2 size={16} className="animate-spin" />
+                      Uploading...
+                    </>
+                  ) : (
+                    <>
+                      <UploadCloud size={16} />
+                      Upload from device
+                    </>
+                  )}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    disabled={uploadingImage}
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      setUploadingImage(true);
+                      try {
+                        const url = await uploadProductImage(file);
+                        setValue('image', url, { shouldDirty: true });
+                        showSuccess('Image uploaded');
+                      } catch (err: any) {
+                        showError(err?.response?.data?.error || 'Image upload failed');
+                      } finally {
+                        setUploadingImage(false);
+                        e.target.value = '';
+                      }
+                    }}
+                  />
+                </label>
+                <details className="mt-2">
+                  <summary className="text-xs text-gray-500 cursor-pointer">Or paste an image URL instead</summary>
+                  <input
+                    type="url"
+                    {...register('image')}
+                    className="input mt-2"
+                    placeholder="https://example.com/image.jpg"
+                  />
+                </details>
+              </div>
+            </div>
           </div>
 
           <div>

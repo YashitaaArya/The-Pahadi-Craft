@@ -12,6 +12,7 @@ const userRoute = require('./Routes/user.route');
 const products = require('./Routes/products');
 const admin = require('./Routes/admin');
 const adminData = require('./Routes/adminData');
+const upload = require('./Routes/upload');
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGO_URI)
@@ -49,6 +50,7 @@ app.use('/api/orders', orders);
 app.use('/api/user', userRoute);
 app.use('/api/products', products);
 app.use('/api/admin', admin);
+app.use('/api/upload', upload);
 app.use('/api', adminData); // /api/analytics, /api/users, /api/reviews, /api/testimonials, /api/feedback, /api/banners
 
 app.get('/', (req, res) => {

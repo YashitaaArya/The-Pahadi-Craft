@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const adminAuth = require('../middleware/adminAuth');
+const requirePermission = require('../middleware/requirePermission');
 const Product = require('../models/Product');
 const Order = require('../models/order');
 const User = require('../models/User');
@@ -10,7 +11,7 @@ const Feedback = require('../models/Feedback');
 const Banner = require('../models/Banner');
 
 // GET /api/analytics - admin only
-router.get('/analytics', adminAuth, async (req, res) => {
+router.get('/analytics', adminAuth, requirePermission('analytics:read'), async (req, res) => {
   try {
     const [totalProducts, totalOrders, totalUsers, orders, topProducts] = await Promise.all([
       Product.countDocuments(),
@@ -81,7 +82,7 @@ router.get('/analytics', adminAuth, async (req, res) => {
 });
 
 // GET /api/users - admin only, list customers
-router.get('/users', adminAuth, async (req, res) => {
+router.get('/users', adminAuth, requirePermission('customers:read'), async (req, res) => {
   try {
     const users = await User.find().sort({ createdAt: -1 });
     res.json(
@@ -121,7 +122,7 @@ router.get('/testimonials', async (req, res) => {
   }
 });
 
-router.get('/feedback', adminAuth, async (req, res) => {
+router.get('/feedback', adminAuth, requirePermission('analytics:read'), async (req, res) => {
   try {
     const feedback = await Feedback.find().sort({ createdAt: -1 });
     res.json(feedback.map((f) => f.toJSON()));
