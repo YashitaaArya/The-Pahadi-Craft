@@ -93,8 +93,11 @@ const MAINTENANCE_MODE = import.meta.env.VITE_MAINTENANCE_MODE === 'true';
 function AppRoutes() {
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith('/admin');
+  const { isAuthenticated } = useAdminAuthStore();
 
-  if (MAINTENANCE_MODE && !isAdminRoute) {
+  // Random visitors see the maintenance page, but anyone logged into admin
+  // can still browse the real storefront to check their work.
+  if (MAINTENANCE_MODE && !isAdminRoute && !isAuthenticated) {
     return <MaintenancePage />;
   }
 
