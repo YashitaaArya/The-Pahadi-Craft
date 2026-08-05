@@ -16,6 +16,9 @@ const Product = require('../models/Product');
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@thepahadicraft.com';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'ChangeMe@123';
 const ADMIN_NAME = process.env.ADMIN_NAME || 'Super Admin';
+const ADMIN_ROLE = ['developer', 'owner', 'sales'].includes(process.env.ADMIN_ROLE)
+  ? process.env.ADMIN_ROLE
+  : 'developer';
 
 const sampleProducts = [
   {
@@ -85,17 +88,17 @@ async function seed() {
 
   const existingAdmin = await AdminUser.findOne({ email: ADMIN_EMAIL.toLowerCase() });
   if (existingAdmin) {
-    console.log(`ℹ️  Admin user ${ADMIN_EMAIL} already exists, skipping.`);
+    console.log(`ℹ️  Admin user ${ADMIN_EMAIL} already exists (role: ${existingAdmin.adminRole}), skipping.`);
+    console.log('   To change their role, edit it directly in the database or delete and re-run seed.');
   } else {
     const passwordHash = await bcrypt.hash(ADMIN_PASSWORD, 10);
     await AdminUser.create({
       email: ADMIN_EMAIL.toLowerCase(),
       passwordHash,
       name: ADMIN_NAME,
-      adminRole: 'super-admin',
-      permissions: ['all'],
+      adminRole: ADMIN_ROLE,
     });
-    console.log(`✅ Created admin user: ${ADMIN_EMAIL} / ${ADMIN_PASSWORD}`);
+    console.log(`✅ Created admin user: ${ADMIN_EMAIL} / ${ADMIN_PASSWORD} (role: ${ADMIN_ROLE})`);
     console.log('   ⚠️  Log in and change this password, or set ADMIN_PASSWORD in .env before seeding.');
   }
 

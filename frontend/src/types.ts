@@ -89,7 +89,7 @@ export interface User {
 
 export interface AdminUser extends User {
   role: 'admin' | 'moderator';
-  adminRole: 'super-admin' | 'product-manager' | 'content-manager';
+  adminRole: 'developer' | 'owner' | 'sales';
   permissions: string[];
   lastLogin?: string;
 }

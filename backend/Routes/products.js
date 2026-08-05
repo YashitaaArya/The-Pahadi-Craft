@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Product = require('../models/Product');
 const adminAuth = require('../middleware/adminAuth');
+const requirePermission = require('../middleware/requirePermission');
 
 // GET /api/products - public, used by the storefront
 router.get('/', async (req, res) => {
@@ -26,7 +27,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // POST /api/products - admin only
-router.post('/', adminAuth, async (req, res) => {
+router.post('/', adminAuth, requirePermission('products:write'), async (req, res) => {
   try {
     const product = await Product.create(req.body);
     res.status(201).json(product.toJSON());
@@ -37,7 +38,7 @@ router.post('/', adminAuth, async (req, res) => {
 });
 
 // PUT /api/products/:id - admin only
-router.put('/:id', adminAuth, async (req, res) => {
+router.put('/:id', adminAuth, requirePermission('products:write'), async (req, res) => {
   try {
     const update = { ...req.body };
     delete update.id; // don't let the frontend overwrite the mongo _id
@@ -54,7 +55,7 @@ router.put('/:id', adminAuth, async (req, res) => {
 });
 
 // DELETE /api/products/:id - admin only
-router.delete('/:id', adminAuth, async (req, res) => {
+router.delete('/:id', adminAuth, requirePermission('products:write'), async (req, res) => {
   try {
     const product = await Product.findByIdAndDelete(req.params.id);
     if (!product) return res.status(404).json({ error: 'Product not found' });

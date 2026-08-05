@@ -38,6 +38,7 @@ import AdminDashboard from './components/admin/Dashboard';
 import ProductManager from './components/admin/ProductManager';
 import OrderManager from './components/admin/OrderManager';
 import UserManager from './components/admin/UserManager';
+import TeamManager from './components/admin/TeamManager';
 import { useAdminAuthStore, initializeAdminAuth } from './store/adminAuthStore';
 import { ToastContainer } from './components/admin/common';
 
@@ -67,6 +68,26 @@ const ProtectedAdminRoute: React.FC<ProtectedAdminRouteProps> = ({ children }) =
   return <>{children}</>;
 };
 
+// Gates a specific admin section behind a permission, on top of the
+// auth check ProtectedAdminRoute already does. Shows a friendly message
+// instead of the page contents if the logged-in admin lacks it.
+const RequirePermission: React.FC<{ permission: string; children: React.ReactNode }> = ({ permission, children }) => {
+  const { adminUser } = useAdminAuthStore();
+  const permissions = adminUser?.permissions || [];
+  const allowed = permissions.includes('all') || permissions.includes(permission);
+
+  if (!allowed) {
+    return (
+      <div className="text-center py-16">
+        <p className="text-gray-600">You don't have access to this section.</p>
+        <p className="text-gray-400 text-sm mt-1">Ask a developer/owner login to change your role if this is unexpected.</p>
+      </div>
+    );
+  }
+
+  return <>{children}</>;
+};
+
 const MAINTENANCE_MODE = import.meta.env.VITE_MAINTENANCE_MODE === 'true';
 
 function AppRoutes() {
@@ -87,14 +108,14 @@ function AppRoutes() {
           <ProtectedAdminRoute>
             <AdminLayout>
               <Routes>
-                <Route path="/" element={<AdminDashboard />} />
+                <Route path="/" element={<RequirePermission permission="analytics:read"><AdminDashboard /></RequirePermission>} />
                 {/* Add more admin routes here as you build them */}
-                <Route path="products" element={<ProductManager />} />
-                <Route path="orders" element={<OrderManager />} />
-                <Route path="customers" element={<UserManager />} />
-                <Route path="reviews" element={<div className="text-center py-12">Reviews coming soon...</div>} />
-                <Route path="analytics" element={<div className="text-center py-12">Analytics coming soon...</div>} />
-                <Route path="settings" element={<div className="text-center py-12">Settings coming soon...</div>} />
+                <Route path="products" element={<RequirePermission permission="products:read"><ProductManager /></RequirePermission>} />
+                <Route path="orders" element={<RequirePermission permission="orders:read"><OrderManager /></RequirePermission>} />
+                <Route path="customers" element={<RequirePermission permission="customers:read"><UserManager /></RequirePermission>} />
+                <Route path="reviews" element={<RequirePermission permission="analytics:read"><div className="text-center py-12">Reviews coming soon...</div></RequirePermission>} />
+                <Route path="analytics" element={<RequirePermission permission="analytics:read"><div className="text-center py-12">Analytics coming soon...</div></RequirePermission>} />
+                <Route path="settings" element={<RequirePermission permission="admins:manage"><TeamManager /></RequirePermission>} />
               </Routes>
             </AdminLayout>
           </ProtectedAdminRoute>
