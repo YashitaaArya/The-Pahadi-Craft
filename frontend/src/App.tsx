@@ -39,6 +39,7 @@ import ProductManager from './components/admin/ProductManager';
 import OrderManager from './components/admin/OrderManager';
 import UserManager from './components/admin/UserManager';
 import TeamManager from './components/admin/TeamManager';
+import TestimonialManager from './components/admin/TestimonialManager';
 import { useAdminAuthStore, initializeAdminAuth } from './store/adminAuthStore';
 import { ToastContainer } from './components/admin/common';
 
@@ -116,7 +117,7 @@ function AppRoutes() {
                 <Route path="products" element={<RequirePermission permission="products:read"><ProductManager /></RequirePermission>} />
                 <Route path="orders" element={<RequirePermission permission="orders:read"><OrderManager /></RequirePermission>} />
                 <Route path="customers" element={<RequirePermission permission="customers:read"><UserManager /></RequirePermission>} />
-                <Route path="reviews" element={<RequirePermission permission="analytics:read"><div className="text-center py-12">Reviews coming soon...</div></RequirePermission>} />
+                <Route path="reviews" element={<RequirePermission permission="content:write"><TestimonialManager /></RequirePermission>} />
                 <Route path="analytics" element={<RequirePermission permission="analytics:read"><div className="text-center py-12">Analytics coming soon...</div></RequirePermission>} />
                 <Route path="settings" element={<RequirePermission permission="admins:manage"><TeamManager /></RequirePermission>} />
               </Routes>

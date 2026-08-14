@@ -115,10 +115,51 @@ router.get('/reviews', async (req, res) => {
 
 router.get('/testimonials', async (req, res) => {
   try {
+    const testimonials = await Testimonial.find({ status: 'approved' }).sort({ createdAt: -1 });
+    res.json(testimonials.map((t) => t.toJSON()));
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch testimonials' });
+  }
+});
+
+// GET /api/testimonials/admin - every testimonial regardless of status, for the dashboard
+router.get('/testimonials/admin', adminAuth, requirePermission('content:write'), async (req, res) => {
+  try {
     const testimonials = await Testimonial.find().sort({ createdAt: -1 });
     res.json(testimonials.map((t) => t.toJSON()));
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch testimonials' });
+  }
+});
+
+router.post('/testimonials', adminAuth, requirePermission('content:write'), async (req, res) => {
+  try {
+    const testimonial = await Testimonial.create(req.body);
+    res.status(201).json(testimonial.toJSON());
+  } catch (err) {
+    res.status(400).json({ error: err.message || 'Failed to create testimonial' });
+  }
+});
+
+router.put('/testimonials/:id', adminAuth, requirePermission('content:write'), async (req, res) => {
+  try {
+    const update = { ...req.body };
+    delete update.id;
+    const testimonial = await Testimonial.findByIdAndUpdate(req.params.id, update, { new: true, runValidators: true });
+    if (!testimonial) return res.status(404).json({ error: 'Testimonial not found' });
+    res.json(testimonial.toJSON());
+  } catch (err) {
+    res.status(400).json({ error: err.message || 'Failed to update testimonial' });
+  }
+});
+
+router.delete('/testimonials/:id', adminAuth, requirePermission('content:write'), async (req, res) => {
+  try {
+    const testimonial = await Testimonial.findByIdAndDelete(req.params.id);
+    if (!testimonial) return res.status(404).json({ error: 'Testimonial not found' });
+    res.status(204).send();
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to delete testimonial' });
   }
 });
 
