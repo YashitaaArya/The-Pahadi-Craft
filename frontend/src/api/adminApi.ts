@@ -79,6 +79,38 @@ export const getTestimonials = async () => {
   return response.data;
 };
 
+// Admin dashboard: every testimonial regardless of approval status
+export const getAllTestimonialsAdmin = async () => {
+  const response = await api.get('/testimonials/admin');
+  return response.data;
+};
+
+export const createTestimonial = async (data: {
+  name: string;
+  content: string;
+  rating: number;
+  image?: string;
+  status?: 'pending' | 'approved' | 'rejected';
+}) => {
+  const response = await api.post('/testimonials', data);
+  return response.data;
+};
+
+export const updateTestimonial = async (id: string, data: Partial<{
+  name: string;
+  content: string;
+  rating: number;
+  image: string;
+  status: 'pending' | 'approved' | 'rejected';
+}>) => {
+  const response = await api.put(`/testimonials/${id}`, data);
+  return response.data;
+};
+
+export const deleteTestimonial = async (id: string) => {
+  await api.delete(`/testimonials/${id}`);
+};
+
 export const getBanners = async () => {
   const response = await api.get('/banners');
   return response.data;

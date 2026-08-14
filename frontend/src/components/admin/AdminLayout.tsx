@@ -59,7 +59,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       label: 'Reviews',
       icon: MessageSquare,
       path: '/admin/reviews',
-      permission: 'analytics:read',
+      permission: 'content:write',
     },
     {
       label: 'Analytics',
