@@ -3,6 +3,26 @@ const router = express.Router();
 const Product = require('../models/Product');
 const adminAuth = require('../middleware/adminAuth');
 const requirePermission = require('../middleware/requirePermission');
+const { MAIN_CATEGORIES } = require('../config/categories');
+
+// GET /api/products/categories - public. The fixed main category list, plus
+// prime/secondary subcategory values already in use, so the admin form can
+// suggest them instead of everyone typing free text from scratch.
+router.get('/categories', async (req, res) => {
+  try {
+    const [primeSubcategories, secondarySubcategories] = await Promise.all([
+      Product.distinct('primeSubcategory'),
+      Product.distinct('secondarySubcategory'),
+    ]);
+    res.json({
+      mainCategories: MAIN_CATEGORIES,
+      primeSubcategories: primeSubcategories.filter(Boolean).sort(),
+      secondarySubcategories: secondarySubcategories.filter(Boolean).sort(),
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch categories' });
+  }
+});
 
 // GET /api/products - public, used by the storefront
 router.get('/', async (req, res) => {

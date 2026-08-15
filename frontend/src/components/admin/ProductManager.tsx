@@ -3,9 +3,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Edit2, Trash2, Search, Filter, ChevronDown, UploadCloud, Loader2 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { useAdminDashboardStore } from '../../store/adminDashboardStore';
-import { Product } from '../../types';
+import { Product, ProductColorVariant } from '../../types';
 import { getDriveImage } from '../../utils/driveImage';
-import { uploadProductImage } from '../../api/adminApi';
+import { uploadProductImage, getProductCategories } from '../../api/adminApi';
 import { compressImage } from '../../utils/compressImage';
 import {
   Modal,
@@ -16,35 +16,19 @@ import {
   showError,
 } from './common';
 
-const CATEGORIES = [
+// Fixed top-level categories - matches backend/config/categories.js exactly.
+// Prime/secondary subcategories are intentionally free text with autocomplete
+// suggestions (fetched from real products already in the database), since the
+// real catalog has far more variety than any hardcoded list could keep up with.
+const MAIN_CATEGORIES = [
   'Candles',
-  'Premium',
-  'Occult',
-  'Soaps',
-  'Fragrances',
-  'Resin',
-  'Metal Crafts',
-  'Terracotta',
-  'Figurines',
-  'Home Decor',
-  'Glass Jars',
-  'Oils',
-  'Others',
+  'Bath Salts & Soaps',
+  'Resin Jewellery',
+  'Resin Artifacts',
+  'Concrete Artifacts',
+  'Terracotta / Clay',
+  'Occasion-Based',
 ];
-
-const SUBCATEGORIES: Record<string, string[]> = {
-  Candles: ['Pillar', 'Jar', 'Figurine', 'Premium', 'Romantic'],
-  Soaps: ['Handmade', 'Luxury', 'Natural', 'Organic'],
-  Fragrances: ['Oils', 'Sprays', 'Diffusers'],
-  Resin: ['Decorative', 'Jewelry', 'Functional'],
-  'Metal Crafts': ['Decorative', 'Functional', 'Premium'],
-  Terracotta: ['Pots', 'Decorative', 'Lamps'],
-  Figurines: ['Small', 'Medium', 'Large'],
-  'Home Decor': ['Candles', 'Figurines', 'Art'],
-  'Glass Jars': ['Small', 'Medium', 'Large'],
-  Oils: ['Essential', 'Fragrance', 'Natural'],
-  Others: ['Miscellaneous'],
-};
 
 interface ProductFormData extends Omit<Product, 'id'> {
   additionalImagesText?: string;
@@ -70,6 +54,23 @@ const ProductManager: React.FC = () => {
   const [uploadingImage, setUploadingImage] = useState(false);
   const [uploadingGalleryImages, setUploadingGalleryImages] = useState(false);
   const [galleryUploadProgress, setGalleryUploadProgress] = useState('');
+  const [categorySuggestions, setCategorySuggestions] = useState<{ primeSubcategories: string[]; secondarySubcategories: string[] }>({
+    primeSubcategories: [],
+    secondarySubcategories: [],
+  });
+  const [colorVariants, setColorVariants] = useState<ProductColorVariant[]>([]);
+  const [uploadingVariantIndex, setUploadingVariantIndex] = useState<number | null>(null);
+
+  useEffect(() => {
+    getProductCategories()
+      .then((data) => setCategorySuggestions({
+        primeSubcategories: data.primeSubcategories,
+        secondarySubcategories: data.secondarySubcategories,
+      }))
+      .catch(() => {
+        // Non-critical - the fields still work as plain free text without suggestions.
+      });
+  }, []);
 
   // Fetch products on mount
   useEffect(() => {
@@ -84,6 +85,13 @@ const ProductManager: React.FC = () => {
         price: 0,
         category: '',
         subcategory: '',
+        mainCategory: '',
+        primeSubcategory: '',
+        secondarySubcategory: '',
+        scented: false,
+        size: '',
+        volume: '',
+        capacity: '',
         stock: 0,
         sku: '',
         image: '',
@@ -93,9 +101,6 @@ const ProductManager: React.FC = () => {
       },
     }
   );
-
-  const selectedCategory = watch('category');
-  const currentSubcategories = selectedCategory ? SUBCATEGORIES[selectedCategory] || [] : [];
 
   // Filter and search products
   const filteredProducts = useMemo(() => {
@@ -111,7 +116,7 @@ const ProductManager: React.FC = () => {
 
     // Category filter
     if (filterCategory !== 'all') {
-      filtered = filtered.filter(p => p.category === filterCategory);
+      filtered = filtered.filter(p => (p.mainCategory || p.category) === filterCategory);
     }
 
     // Sort
@@ -133,6 +138,7 @@ const ProductManager: React.FC = () => {
   const handleOpenModal = (product?: Product) => {
     if (product) {
       setEditingProduct(product);
+      setColorVariants(product.colorVariants || []);
       reset({
         ...product,
         additionalImagesText: (
@@ -143,12 +149,20 @@ const ProductManager: React.FC = () => {
       });
     } else {
       setEditingProduct(null);
+      setColorVariants([]);
       reset({
         name: '',
         description: '',
         price: 0,
         category: '',
         subcategory: '',
+        mainCategory: '',
+        primeSubcategory: '',
+        secondarySubcategory: '',
+        scented: false,
+        size: '',
+        volume: '',
+        capacity: '',
         stock: 0,
         sku: '',
         image: '',
@@ -163,6 +177,7 @@ const ProductManager: React.FC = () => {
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setEditingProduct(null);
+    setColorVariants([]);
     reset();
   };
 
@@ -195,6 +210,7 @@ const ProductManager: React.FC = () => {
         ...rest,
         image: normalizedImage,
         additionalImages: parsedAdditionalImages,
+        colorVariants,
       };
 
       if (editingProduct) {
@@ -255,7 +271,7 @@ const ProductManager: React.FC = () => {
           className="input"
         >
           <option value="all">All Categories</option>
-          {CATEGORIES.map(cat => (
+          {MAIN_CATEGORIES.map(cat => (
             <option key={cat} value={cat}>{cat}</option>
           ))}
         </select>
@@ -343,7 +359,7 @@ const ProductManager: React.FC = () => {
                     </div>
                     <div>
                       <p className="text-gray-500">Category</p>
-                      <p className="font-semibold text-gray-900">{product.category}</p>
+                      <p className="font-semibold text-gray-900">{product.mainCategory || product.category}</p>
                     </div>
                     <div>
                       <p className="text-gray-500">Stock</p>
@@ -358,6 +374,27 @@ const ProductManager: React.FC = () => {
                   </div>
 
                   <p className="text-sm text-gray-600 line-clamp-1">{product.description}</p>
+
+                  <div className="flex items-center gap-3 mt-2">
+                    {product.scented && (
+                      <span className="px-2 py-0.5 bg-purple-50 text-purple-700 text-xs rounded-full">Scented</span>
+                    )}
+                    {product.colorVariants && product.colorVariants.length > 0 && (
+                      <div className="flex items-center gap-1">
+                        {product.colorVariants.slice(0, 6).map((v, i) => (
+                          <span
+                            key={i}
+                            title={v.colorName}
+                            className="w-4 h-4 rounded-full border border-gray-300"
+                            style={{ backgroundColor: v.hexCode }}
+                          />
+                        ))}
+                        {product.colorVariants.length > 6 && (
+                          <span className="text-xs text-gray-400">+{product.colorVariants.length - 6}</span>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 {/* Actions */}
@@ -486,30 +523,80 @@ const ProductManager: React.FC = () => {
           </div>
 
           {/* Category & Subcategory */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Category *
+                Main Category *
               </label>
-              <select {...register('category', { required: 'Category is required' })} className="input">
+              <select {...register('mainCategory', { required: 'Category is required' })} className="input">
                 <option value="">Select Category</option>
-                {CATEGORIES.map(cat => (
+                {MAIN_CATEGORIES.map(cat => (
                   <option key={cat} value={cat}>{cat}</option>
                 ))}
               </select>
-              {errors.category && <p className="text-red-600 text-sm mt-1">{errors.category.message}</p>}
+              {errors.mainCategory && <p className="text-red-600 text-sm mt-1">{errors.mainCategory.message}</p>}
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Subcategory
+                Prime Subcategory
               </label>
-              <select {...register('subcategory')} className="input">
-                <option value="">Select Subcategory</option>
-                {currentSubcategories.map(subcat => (
-                  <option key={subcat} value={subcat}>{subcat}</option>
+              <input
+                type="text"
+                list="prime-subcategory-options"
+                {...register('primeSubcategory')}
+                className="input"
+                placeholder="e.g. Glass Jar Candles"
+              />
+              <datalist id="prime-subcategory-options">
+                {categorySuggestions.primeSubcategories.map((s) => (
+                  <option key={s} value={s} />
                 ))}
-              </select>
+              </datalist>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Secondary Subcategory
+              </label>
+              <input
+                type="text"
+                list="secondary-subcategory-options"
+                {...register('secondarySubcategory')}
+                className="input"
+                placeholder="Optional, more specific"
+              />
+              <datalist id="secondary-subcategory-options">
+                {categorySuggestions.secondarySubcategories.map((s) => (
+                  <option key={s} value={s} />
+                ))}
+              </datalist>
+            </div>
+          </div>
+
+          {/* Size / Volume / Capacity / Scented */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Size</label>
+              <input type="text" {...register('size')} className="input" placeholder='e.g. 4 x 6 in' />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Volume</label>
+              <input type="text" {...register('volume')} className="input" placeholder="e.g. 250ml" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Capacity</label>
+              <input type="text" {...register('capacity')} className="input" placeholder="e.g. 500g" />
+            </div>
+            <div className="flex items-end pb-2">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  {...register('scented')}
+                  className="w-4 h-4 rounded border-gray-300 text-[#C9A66B]"
+                />
+                <span className="text-sm text-gray-700">Scented</span>
+              </label>
             </div>
           </div>
 
@@ -700,6 +787,158 @@ const ProductManager: React.FC = () => {
                 placeholder="Enter one image URL per line or comma-separated"
               />
             </details>
+          </div>
+
+          {/* Color Variants */}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <label className="block text-sm font-medium text-gray-700">
+                Color Variants
+              </label>
+              <button
+                type="button"
+                onClick={() => setColorVariants((prev) => [...prev, { colorName: '', hexCode: '#C9A66B', images: [], stock: 0, sku: '' }])}
+                className="text-xs px-3 py-1.5 border border-[#C9A66B] text-[#5A4232] rounded-lg hover:bg-[#F5E9DA]"
+              >
+                + Add Color Variant
+              </button>
+            </div>
+            <p className="text-xs text-gray-500 mb-3">
+              If this product comes in multiple colors, add one variant per color. Each shows as a round swatch for customers to pick on the product page.
+            </p>
+
+            {colorVariants.length === 0 ? (
+              <p className="text-sm text-gray-400 italic">No color variants added - leave this empty if the product only comes in one look.</p>
+            ) : (
+              <div className="space-y-3">
+                {colorVariants.map((variant, idx) => (
+                  <div key={idx} className="border border-gray-200 rounded-lg p-3">
+                    <div className="flex items-start gap-3">
+                      <div className="flex flex-col items-center gap-1">
+                        <input
+                          type="color"
+                          value={variant.hexCode}
+                          onChange={(e) => {
+                            const updated = [...colorVariants];
+                            updated[idx] = { ...updated[idx], hexCode: e.target.value };
+                            setColorVariants(updated);
+                          }}
+                          className="w-10 h-10 rounded-full border border-gray-300 cursor-pointer p-0"
+                          title="Swatch color"
+                        />
+                      </div>
+
+                      <div className="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        <input
+                          type="text"
+                          placeholder="Color name (e.g. Terracotta Orange)"
+                          value={variant.colorName}
+                          onChange={(e) => {
+                            const updated = [...colorVariants];
+                            updated[idx] = { ...updated[idx], colorName: e.target.value };
+                            setColorVariants(updated);
+                          }}
+                          className="input"
+                        />
+                        <input
+                          type="number"
+                          placeholder="Stock"
+                          min="0"
+                          value={variant.stock}
+                          onChange={(e) => {
+                            const updated = [...colorVariants];
+                            updated[idx] = { ...updated[idx], stock: Number(e.target.value) };
+                            setColorVariants(updated);
+                          }}
+                          className="input"
+                        />
+                        <input
+                          type="text"
+                          placeholder="SKU (optional)"
+                          value={variant.sku}
+                          onChange={(e) => {
+                            const updated = [...colorVariants];
+                            updated[idx] = { ...updated[idx], sku: e.target.value };
+                            setColorVariants(updated);
+                          }}
+                          className="input"
+                        />
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => setColorVariants((prev) => prev.filter((_, i) => i !== idx))}
+                        className="text-red-500 hover:text-red-700 p-1"
+                        title="Remove this variant"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+
+                    <div className="mt-3 flex items-center gap-2 flex-wrap">
+                      {variant.images.map((img, imgIdx) => (
+                        <div key={imgIdx} className="relative group">
+                          <img src={img} alt="" className="w-12 h-12 object-cover rounded-lg border border-gray-200" />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const updated = [...colorVariants];
+                              updated[idx] = { ...updated[idx], images: updated[idx].images.filter((_, i) => i !== imgIdx) };
+                              setColorVariants(updated);
+                            }}
+                            className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-red-500 text-white rounded-full text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ))}
+                      <label className="flex items-center gap-1 px-2 py-1.5 border border-dashed border-gray-300 text-gray-500 rounded-lg text-xs cursor-pointer hover:bg-gray-50">
+                        {uploadingVariantIndex === idx ? (
+                          <Loader2 size={12} className="animate-spin" />
+                        ) : (
+                          <UploadCloud size={12} />
+                        )}
+                        {uploadingVariantIndex === idx ? 'Uploading...' : 'Add photo'}
+                        <input
+                          type="file"
+                          accept="image/*"
+                          multiple
+                          className="hidden"
+                          disabled={uploadingVariantIndex !== null}
+                          onChange={async (e) => {
+                            const files = Array.from(e.target.files || []);
+                            if (files.length === 0) return;
+                            setUploadingVariantIndex(idx);
+                            const uploaded: string[] = [];
+                            try {
+                              for (const file of files) {
+                                try {
+                                  const compressed = await compressImage(file);
+                                  const url = await uploadProductImage(compressed);
+                                  uploaded.push(url);
+                                } catch (err: any) {
+                                  showError(err?.response?.data?.error || `Failed to upload ${file.name}`);
+                                }
+                              }
+                              if (uploaded.length > 0) {
+                                setColorVariants((prev) => {
+                                  const updated = [...prev];
+                                  updated[idx] = { ...updated[idx], images: [...updated[idx].images, ...uploaded] };
+                                  return updated;
+                                });
+                              }
+                            } finally {
+                              setUploadingVariantIndex(null);
+                              e.target.value = '';
+                            }
+                          }}
+                        />
+                      </label>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </form>
       </Modal>

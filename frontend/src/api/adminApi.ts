@@ -32,6 +32,15 @@ export const getProducts = async () => {
   return response.data;
 };
 
+export const getProductCategories = async (): Promise<{
+  mainCategories: string[];
+  primeSubcategories: string[];
+  secondarySubcategories: string[];
+}> => {
+  const response = await api.get('/products/categories');
+  return response.data;
+};
+
 export const createProduct = async (product: object) => {
   const response = await api.post('/products', product);
   return response.data;
@@ -89,7 +98,7 @@ export const createTestimonial = async (data: {
   name: string;
   content: string;
   rating: number;
-  image?: string;
+  images?: string[];
   status?: 'pending' | 'approved' | 'rejected';
 }) => {
   const response = await api.post('/testimonials', data);
@@ -100,7 +109,7 @@ export const updateTestimonial = async (id: string, data: Partial<{
   name: string;
   content: string;
   rating: number;
-  image: string;
+  images: string[];
   status: 'pending' | 'approved' | 'rejected';
 }>) => {
   const response = await api.put(`/testimonials/${id}`, data);

@@ -1,4 +1,13 @@
 const mongoose = require('mongoose');
+const { MAIN_CATEGORIES } = require('../config/categories');
+
+const colorVariantSchema = new mongoose.Schema({
+  colorName: { type: String, required: true },   // e.g. "Terracotta Orange"
+  hexCode: { type: String, default: '#C9A66B' },  // used to render the round swatch
+  images: { type: [String], default: [] },        // photos of the product in this color
+  stock: { type: Number, default: 0 },
+  sku: { type: String, default: '' },
+}, { _id: false });
 
 const productSchema = new mongoose.Schema({
   name: { type: String, required: true },
@@ -6,8 +15,24 @@ const productSchema = new mongoose.Schema({
   price: { type: Number, required: true },
   image: { type: String, default: '' },
   additionalImages: { type: [String], default: [] },
-  category: { type: String, required: true },
+
+  // 3-tier categorization
+  mainCategory: { type: String, enum: MAIN_CATEGORIES, required: true },
+  primeSubcategory: { type: String, default: '' },       // e.g. "Glass Jar Candles"
+  secondarySubcategory: { type: String, default: '' },    // finer-grained, optional
+
+  // Legacy single-level fields - kept so nothing already saved breaks;
+  // new products should use mainCategory/primeSubcategory instead.
+  category: { type: String, default: '' },
   subcategory: { type: String, default: '' },
+
+  scented: { type: Boolean, default: false },
+  size: { type: String, default: '' },       // free text, e.g. "4 x 6 in"
+  volume: { type: String, default: '' },     // free text, e.g. "250ml"
+  capacity: { type: String, default: '' },   // free text, e.g. "500g"
+
+  colorVariants: { type: [colorVariantSchema], default: [] },
+
   fragranceNotes: { type: [String], default: [] },
   ingredients: { type: [String], default: [] },
   burnTime: { type: String, default: '' },
