@@ -1,11 +1,29 @@
+export interface ProductColorVariant {
+  colorName: string;
+  hexCode: string;
+  images: string[];
+  stock: number;
+  sku: string;
+}
+
 export interface Product {
   id: string;
   name: string;
   description: string;
   price: number;
   image: string;
+  // Legacy single-level category fields - kept so nothing already saved breaks.
+  // New products should use mainCategory/primeSubcategory/secondarySubcategory instead.
   category: string;
   subcategory?: string;
+  mainCategory?: string;
+  primeSubcategory?: string;
+  secondarySubcategory?: string;
+  scented?: boolean;
+  size?: string;
+  volume?: string;
+  capacity?: string;
+  colorVariants?: ProductColorVariant[];
   fragranceNotes?: string[];
   ingredients?: string[];
   burnTime?: string;
@@ -153,7 +171,7 @@ export interface Feedback {
 export interface Testimonial {
   id: string;
   name: string;
-  image: string;
+  images: string[];
   content: string;
   rating: number;
   status: 'pending' | 'approved' | 'rejected';
