@@ -23,7 +23,8 @@ router.post('/save', async (req, res) => {
           city: city || '',
           state: state || '',
           pincode: pincode || ''
-        }
+        },
+        lastLogin: new Date(),
       });
     } else {
       user = await User.findByIdAndUpdate(
@@ -32,13 +33,17 @@ router.post('/save', async (req, res) => {
           email,
           name: name || user.name,
           photo: photo || user.photo,
+          // Only overwrite phone/address if new values were actually sent -
+          // a plain sign-in (no form data) shouldn't blank out what a
+          // previous sign-up already collected.
           phone: phone || user.phone,
           address: {
             street: street || user.address?.street,
             city: city || user.address?.city,
             state: state || user.address?.state,
             pincode: pincode || user.address?.pincode
-          }
+          },
+          lastLogin: new Date(),
         },
         { new: true }
       );

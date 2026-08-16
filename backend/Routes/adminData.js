@@ -94,6 +94,7 @@ router.get('/users', adminAuth, requirePermission('customers:read'), async (req,
         createdAt: u.createdAt,
         phone: u.phone,
         status: 'active',
+        lastLogin: u.lastLogin,
       }))
     );
   } catch (err) {
@@ -102,8 +103,6 @@ router.get('/users', adminAuth, requirePermission('customers:read'), async (req,
 });
 
 // Reviews / Testimonials / Feedback / Banners
-// GET is public (so the storefront can show approved reviews/testimonials later),
-// admin-only for create/update.
 router.get('/reviews', async (req, res) => {
   try {
     const reviews = await Review.find().sort({ createdAt: -1 });
@@ -113,6 +112,7 @@ router.get('/reviews', async (req, res) => {
   }
 });
 
+// GET /api/testimonials - public, approved only (what the homepage shows)
 router.get('/testimonials', async (req, res) => {
   try {
     const testimonials = await Testimonial.find({ status: 'approved' }).sort({ createdAt: -1 });
@@ -132,6 +132,30 @@ router.get('/testimonials/admin', adminAuth, requirePermission('content:write'),
   }
 });
 
+// POST /api/testimonials/submit - public, for logged-in customers to share their
+// own experience. Always saved as "pending" - customers can never self-approve,
+// an admin/owner has to review it in the dashboard before it appears anywhere.
+router.post('/testimonials/submit', async (req, res) => {
+  try {
+    const { name, content, rating, images } = req.body;
+    if (!name || !content) {
+      return res.status(400).json({ error: 'Name and testimonial text are required' });
+    }
+    const testimonial = await Testimonial.create({
+      name,
+      content,
+      rating: rating || 5,
+      images: Array.isArray(images) ? images.slice(0, 8) : [], // sane cap
+      status: 'pending',
+    });
+    res.status(201).json(testimonial.toJSON());
+  } catch (err) {
+    console.error('Error submitting testimonial:', err);
+    res.status(400).json({ error: 'Failed to submit testimonial' });
+  }
+});
+
+// Admin-only testimonial management (curated ones, or moderating submitted ones)
 router.post('/testimonials', adminAuth, requirePermission('content:write'), async (req, res) => {
   try {
     const testimonial = await Testimonial.create(req.body);

@@ -120,6 +120,18 @@ export const deleteTestimonial = async (id: string) => {
   await api.delete(`/testimonials/${id}`);
 };
 
+// Public - any logged-in customer can call this. Always lands as "pending"
+// on the backend, so nothing shows on the site until an admin approves it.
+export const submitCustomerTestimonial = async (data: {
+  name: string;
+  content: string;
+  rating: number;
+  images?: string[];
+}) => {
+  const response = await api.post('/testimonials/submit', data);
+  return response.data;
+};
+
 export const getBanners = async () => {
   const response = await api.get('/banners');
   return response.data;
