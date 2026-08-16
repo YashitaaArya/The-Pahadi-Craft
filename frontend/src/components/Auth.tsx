@@ -34,7 +34,16 @@ const Auth: React.FC = () => {
     setErrorMessage('');
     try {
       if (isSignUp) {
-        await signUp({ email: data.email, password: data.password, name: data.name || '' });
+        await signUp({
+          email: data.email,
+          password: data.password,
+          name: data.name || '',
+          phone: data.phone,
+          street: data.street,
+          city: data.city,
+          state: data.state,
+          pincode: data.pincode,
+        });
       } else {
         await signIn({ email: data.email, password: data.password });
       }
@@ -288,4 +297,3 @@ const Auth: React.FC = () => {
 };
 
 export default Auth;
-
