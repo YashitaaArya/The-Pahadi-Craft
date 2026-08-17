@@ -10,6 +10,7 @@
     "description": "textarea[name=\"description\"]",
     "price": "input[name=\"price\"]",
     "stock": "input[name=\"stock\"]",
-    "mainCategory": "select[name=\"mainCategory\"]"
+    "mainCategory": "select[name=\"mainCategory\"]",
+    "addButton": "button:has-text(\"Add Product\")"
   }
 }

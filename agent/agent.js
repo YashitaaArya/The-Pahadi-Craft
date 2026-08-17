@@ -4,7 +4,9 @@ const { chromium } = require('playwright');
 
 const ADMIN_ORIGIN = process.env.ADMIN_ORIGIN || 'http://localhost:5173';
 const LOGIN_PATH = process.env.LOGIN_PATH || '/admin/login';
+const PRODUCTS_PATH = process.env.PRODUCTS_PATH || '/admin/product';
 const ADD_PRODUCT_PATH = process.env.ADD_PRODUCT_PATH || '/admin/add-product';
+const ADD_BUTTON_SELECTOR = process.env.ADD_BUTTON_SELECTOR || 'button:has-text("Add Product"), button:has-text("Add")';
 const EXCEL_PATH = process.env.EXCEL_PATH || 'products.xlsx';
 const HEADLESS = process.env.HEADLESS !== 'false';
 
@@ -122,8 +124,19 @@ async function run() {
   for (let i = 0; i < rows.length; i++) {
     const row = rows[i];
     console.log(`Processing row ${i + 1}/${rows.length}: ${row['Product Name'] || row['Name'] || 'unnamed'}`);
-    await page.goto(ADMIN_ORIGIN + ADD_PRODUCT_PATH, { waitUntil: 'networkidle' });
+    // Navigate to products list and open the Add Product form (may be a modal)
+    await page.goto(ADMIN_ORIGIN + PRODUCTS_PATH, { waitUntil: 'networkidle' }).catch(() => {});
     await page.waitForTimeout(800);
+    // Try clicking the Add Product button; fallback to navigating to ADD_PRODUCT_PATH
+    const addBtn = await page.$(ADD_BUTTON_SELECTOR);
+    if (addBtn) {
+      await addBtn.click().catch(() => {});
+      await page.waitForTimeout(700);
+    } else {
+      console.log('Add button not found on products page — falling back to direct add-product path');
+      await page.goto(ADMIN_ORIGIN + ADD_PRODUCT_PATH, { waitUntil: 'networkidle' }).catch(() => {});
+      await page.waitForTimeout(800);
+    }
 
     for (const rawKey of Object.keys(row)) {
       const key = normalizeKey(rawKey);
