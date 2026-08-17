@@ -12,7 +12,7 @@ npm install
 npx playwright install
 ```
 
-2. Copy `.env.example` to `.env` and set `ADMIN_ORIGIN`, `LOGIN_PATH`, `PRODUCTS_PATH`, `ADD_PRODUCT_PATH`, `ADD_BUTTON_SELECTOR`, `ADMIN_USER`, `ADMIN_PASS`, and `EXCEL_PATH`.
+2. Copy `.env.example` to `.env` and set `ADMIN_ORIGIN`, `LOGIN_PATH`, `PRODUCTS_PATH`, `ADD_BUTTON_SELECTOR`, `ADMIN_USER`, `ADMIN_PASS`, and `EXCEL_PATH`. `ADD_PRODUCT_PATH` is optional — only needed if your admin provides a direct URL for the add form instead of a button/modal.
 
 3. Prepare an Excel file (first sheet) with columns matching the form labels, e.g. `Product Name`, `SKU`, `Description`, `Price (₹)`, `Stock`, `Discount (%)`, `Main Category`, `Prime Subcategory`, `Secondary Subcategory`, `Size`, `Volume`, `Capacity`, `Scented`, `Mark as Featured`, `Mark as Trending`, `Product Image URLs` (comma-separated).
 
