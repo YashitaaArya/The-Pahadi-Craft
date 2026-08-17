@@ -1,0 +1,16 @@
+{
+  "name": "product-import-agent",
+  "version": "0.1.0",
+  "description": "Automates admin login and Add Product form filling from Excel using Playwright",
+  "main": "agent.js",
+  "scripts": {
+    "start": "node agent.js"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^16.0.0",
+    "playwright": "^1.35.0",
+    "xlsx": "^0.18.5"
+  }
+}

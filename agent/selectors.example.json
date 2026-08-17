@@ -1,0 +1,15 @@
+{
+  "login": {
+    "username": "input[type=\"email\"]",
+    "password": "input[type=\"password\"]",
+    "submit": "button[type=\"submit\"]"
+  },
+  "addProduct": {
+    "productName": "input[name=\"productName\"]",
+    "sku": "input[name=\"sku\"]",
+    "description": "textarea[name=\"description\"]",
+    "price": "input[name=\"price\"]",
+    "stock": "input[name=\"stock\"]",
+    "mainCategory": "select[name=\"mainCategory\"]"
+  }
+}
