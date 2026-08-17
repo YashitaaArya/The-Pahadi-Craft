@@ -7,6 +7,7 @@ import { Product, ProductColorVariant } from '../../types';
 import { getDriveImage } from '../../utils/driveImage';
 import { uploadProductImage, getProductCategories } from '../../api/adminApi';
 import { compressImage } from '../../utils/compressImage';
+import BulkProductUpload from './BulkProductUpload';
 import {
   Modal,
   ConfirmationDialog,
@@ -60,6 +61,7 @@ const ProductManager: React.FC = () => {
   });
   const [colorVariants, setColorVariants] = useState<ProductColorVariant[]>([]);
   const [uploadingVariantIndex, setUploadingVariantIndex] = useState<number | null>(null);
+  const [bulkUploadOpen, setBulkUploadOpen] = useState(false);
 
   useEffect(() => {
     getProductCategories()
@@ -239,15 +241,24 @@ const ProductManager: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <h1 className="text-3xl font-serif text-[#5A4232]">Product Management</h1>
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={() => handleOpenModal()}
-          className="btn btn-primary w-full sm:w-auto flex items-center justify-center gap-2"
-        >
-          <Plus className="w-5 h-5" />
-          Add Product
-        </motion.button>
+        <div className="flex gap-3 w-full sm:w-auto">
+          <button
+            onClick={() => setBulkUploadOpen(true)}
+            className="btn btn-secondary flex-1 sm:flex-none flex items-center justify-center gap-2"
+          >
+            <UploadCloud className="w-5 h-5" />
+            Bulk Upload
+          </button>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => handleOpenModal()}
+            className="btn btn-primary flex-1 sm:flex-none flex items-center justify-center gap-2"
+          >
+            <Plus className="w-5 h-5" />
+            Add Product
+          </motion.button>
+        </div>
       </div>
 
       {/* Filters & Search */}
@@ -956,6 +967,12 @@ const ProductManager: React.FC = () => {
           setIsDeleteDialogOpen(false);
           setDeleteProductId(null);
         }}
+      />
+
+      <BulkProductUpload
+        isOpen={bulkUploadOpen}
+        onClose={() => setBulkUploadOpen(false)}
+        onImported={fetchProducts}
       />
     </div>
   );

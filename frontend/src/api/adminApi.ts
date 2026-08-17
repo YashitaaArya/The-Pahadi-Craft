@@ -41,6 +41,34 @@ export const getProductCategories = async (): Promise<{
   return response.data;
 };
 
+export const downloadProductTemplate = async () => {
+  const response = await api.get('/products/bulk-import/template', { responseType: 'blob' });
+  const url = window.URL.createObjectURL(new Blob([response.data]));
+  const link = document.createElement('a');
+  link.href = url;
+  link.setAttribute('download', 'pahadi-craft-product-template.xlsx');
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.URL.revokeObjectURL(url);
+};
+
+export interface BulkImportResult {
+  totalRows: number;
+  successCount: number;
+  failCount: number;
+  errors: { row: number | string; error: string }[];
+}
+
+export const bulkImportProducts = async (file: File): Promise<BulkImportResult> => {
+  const formData = new FormData();
+  formData.append('file', file);
+  const response = await api.post('/products/bulk-import', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return response.data;
+};
+
 export const createProduct = async (product: object) => {
   const response = await api.post('/products', product);
   return response.data;
