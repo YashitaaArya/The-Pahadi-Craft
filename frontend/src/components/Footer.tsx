@@ -1,8 +1,29 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Facebook, Instagram, Twitter, Mail, MapPin, Phone, ArrowRight, Send } from 'lucide-react';
+import { Facebook, Instagram, Twitter, Mail, MapPin, Phone, ArrowRight, Send, Loader2 } from 'lucide-react';
+import axios from 'axios';
 
 const Footer = () => {
+  const [email, setEmail] = useState('');
+  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [message, setMessage] = useState('');
+
+  const handleSubscribe = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.trim()) return;
+    setStatus('loading');
+    setMessage('');
+    try {
+      const res = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/newsletter/subscribe`, { email });
+      setStatus('success');
+      setMessage(res.data.alreadySubscribed ? "You're already on the list!" : 'Thanks for subscribing!');
+      setEmail('');
+    } catch (err: any) {
+      setStatus('error');
+      setMessage(err?.response?.data?.error || 'Something went wrong, please try again.');
+    }
+  };
+
   return (
     <footer className="bg-gradient-to-br from-[#5A4232] to-[#3A2A20] text-white">
       {/* Decorative top border */}
@@ -17,16 +38,29 @@ const Footer = () => {
               <p className="text-gray-300">Subscribe to receive updates, access to exclusive deals, and more.</p>
             </div>
             <div className="w-full md:w-auto">
-              <div className="flex">
-                <input 
-                  type="email" 
-                  placeholder="Enter your email" 
-                  className="px-4 py-3 bg-[#3A2A20]/60 border border-[#6B5242] rounded-l-md w-full md:w-80 focus:outline-none focus:border-[#C9A66B]"
+              <form onSubmit={handleSubscribe} className="flex">
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Enter your email"
+                  required
+                  disabled={status === 'loading'}
+                  className="px-4 py-3 bg-[#3A2A20]/60 border border-[#6B5242] rounded-l-md w-full md:w-80 focus:outline-none focus:border-[#C9A66B] disabled:opacity-60"
                 />
-                <button className="bg-[#C9A66B] hover:bg-[#D9B67B] px-4 rounded-r-md transition-colors duration-300">
-                  <Send className="w-5 h-5" />
+                <button
+                  type="submit"
+                  disabled={status === 'loading'}
+                  className="bg-[#C9A66B] hover:bg-[#D9B67B] px-4 rounded-r-md transition-colors duration-300 disabled:opacity-60"
+                >
+                  {status === 'loading' ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
                 </button>
-              </div>
+              </form>
+              {message && (
+                <p className={`text-sm mt-2 ${status === 'error' ? 'text-red-300' : 'text-[#C9A66B]'}`}>
+                  {message}
+                </p>
+              )}
             </div>
           </div>
         </div>
