@@ -4,7 +4,7 @@ import { CartItem, Product } from '../types';
 interface CartStore {
   items: CartItem[];
   isOpen: boolean;
-  addItem: (product: Product) => void;
+  addItem: (product: Product, quantity?: number) => void;
   removeItem: (productId: string) => void;
   updateQuantity: (productId: string, quantity: number) => void;
   clearCart: () => void;
@@ -16,7 +16,7 @@ interface CartStore {
 export const useCartStore = create<CartStore>((set, get) => ({
   items: [],
   isOpen: false,
-  addItem: (product) => {
+  addItem: (product, quantity = 1) => {
     const items = get().items;
     const existingItem = items.find(item => item.product.id === product.id);
 
@@ -24,12 +24,12 @@ export const useCartStore = create<CartStore>((set, get) => ({
       set({
         items: items.map(item =>
           item.product.id === product.id
-            ? { ...item, quantity: item.quantity + 1 }
+            ? { ...item, quantity: item.quantity + quantity }
             : item
         ),
       });
     } else {
-      set({ items: [...items, { product, quantity: 1 }] });
+      set({ items: [...items, { product, quantity }] });
     }
   },
   removeItem: (productId) => {

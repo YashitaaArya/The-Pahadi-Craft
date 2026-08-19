@@ -33,6 +33,8 @@ export interface Product {
   Weight?: string;
   colorVariants?: ProductColorVariant[];
   fragranceVariants?: ProductFragranceVariant[];
+  selectedColorVariant?: ProductColorVariant;
+  selectedFragranceVariant?: ProductFragranceVariant;
   fragranceNotes?: string[];
   ingredients?: string[];
   burnTime?: string;

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Facebook, Instagram, Twitter, Mail, MapPin, Phone, ArrowRight, Send, Loader2 } from 'lucide-react';
+import { Facebook, Instagram, Twitter, Mail, MapPin, Phone, ArrowRight, Send, Loader2, Youtube, Linkedin } from 'lucide-react';
 import axios from 'axios';
 
 const Footer = () => {
@@ -72,10 +72,10 @@ const Footer = () => {
               <div className="h-0.5 w-16 bg-[#C9A66B] mb-4"></div>
             </div>
             <p className="text-gray-300 mb-6 leading-relaxed">
-              Illuminating spaces with handcrafted elegance since 2020. Artisan crafts that bring the essence of mountain craftsmanship to your home.
+              Illuminating spaces with handcrafted elegance since 2017. Artisan crafts that bring the essence of mountain craftsmanship to your home.
             </p>
             <div className="flex space-x-4">
-              <a href="#" className="w-10 h-10 rounded-full bg-[#3A2A20] flex items-center justify-center hover:bg-[#C9A66B] transition-colors duration-300">
+              <a href="https://www.facebook.com/neetyarya" className="w-10 h-10 rounded-full bg-[#3A2A20] flex items-center justify-center hover:bg-[#C9A66B] transition-colors duration-300">
                 <Facebook className="w-5 h-5" />
               </a>
               <a
@@ -89,6 +89,12 @@ const Footer = () => {
               {/* <a href="#" className="w-10 h-10 rounded-full bg-[#3A2A20] flex items-center justify-center hover:bg-[#C9A66B] transition-colors duration-300">
                 <Twitter className="w-5 h-5" />
               </a> */}
+              <a href="https://www.youtube.com/@pahadicraft" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-[#3A2A20] flex items-center justify-center hover:bg-[#C9A66B] transition-colors duration-300">
+                <Youtube className="w-5 h-5" />
+              </a>
+              <a href="https://www.linkedin.com/company/pahadi-craft" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-[#3A2A20] flex items-center justify-center hover:bg-[#C9A66B] transition-colors duration-300">
+                <Linkedin className="w-5 h-5" />
+              </a>
             </div>
           </div>
 
