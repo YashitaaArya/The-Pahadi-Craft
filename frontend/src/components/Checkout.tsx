@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useCartStore } from '../store/cartStore';
+import { getCartItemKey, useCartStore } from '../store/cartStore';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
@@ -282,8 +282,12 @@ const Checkout: React.FC = () => {
             <h2 className="font-serif text-lg mb-2">Order Summary</h2>
             <ul className="mb-2">
               {items.map((item) => (
-                <li key={item.product.id} className="flex justify-between text-sm">
-                  <span>{item.product.name} x {item.quantity}</span>
+                <li key={getCartItemKey(item.product)} className="flex justify-between text-sm">
+                  <span>
+                    {item.product.name} x {item.quantity}
+                    {item.product.selectedColorVariant && <small className="block text-gray-500">Color: {item.product.selectedColorVariant.colorName}</small>}
+                    {item.product.selectedFragranceVariant && <small className="block text-gray-500">Fragrance: {item.product.selectedFragranceVariant.fragranceName}</small>}
+                  </span>
                   <span>₹{(item.product.price * item.quantity).toFixed(2)}</span>
                 </li>
               ))}

@@ -28,7 +28,7 @@ const instagramPosts = [
 
 const Instagram = () => {
   const instagramLink = 'https://www.instagram.com/pahadi_craft?igsh=MWZja2s0cXNycTNnZA==';
-  const FacebookLink = 'https://www.facebook.com/neetyarya';
+  const FacebookLink = 'https://www.facebook.com/pahadicraft';
   const YoutubeLink = 'https://www.youtube.com/@PahadiCraft';
   const LinkedinLink = 'https://www.linkedin.com/company/pahadi-craft/';
 

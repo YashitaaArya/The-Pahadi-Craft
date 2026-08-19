@@ -167,7 +167,7 @@ Both point at the same production MongoDB Atlas by default (via `MONGO_URI`) —
 
 ### 🔧 In progress / next up
 - [ ] Facebook footer icon links to `href="#"` (dead link); Twitter/X icon is commented out — need real URLs for Facebook, YouTube, WhatsApp, Threads to wire these up properly
-- [x] Facebook link wired to https://www.facebook.com/neetyarya/ (double-check with owner: this looks like a personal profile, not necessarily a dedicated business page)
+- [x] Facebook link wired to https://www.facebook.com/pahadicraft/ (double-check with owner: this looks like a personal profile, not necessarily a dedicated business page)
 - [ ] YouTube + WhatsApp + Threads links still needed for footer
 
 ### 🎨 Site-wide polish list (from owner's detailed walkthrough)

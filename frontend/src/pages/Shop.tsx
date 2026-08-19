@@ -35,6 +35,14 @@ const Shop = () => {
   }, [products]);
 
   const handleAddToCart = (product: Product, qty = 1) => {
+    if ((product.colorVariants ?? []).length > 0 && !selectedColorVariant) {
+      alert('Please choose a color before adding this product to your cart.');
+      return;
+    }
+    if ((product.fragranceVariants ?? []).length > 0 && !selectedFragranceVariant) {
+      alert('Please choose a fragrance before adding this product to your cart.');
+      return;
+    }
     addItem({
       ...product,
       selectedColorVariant: selectedColorVariant || undefined,
