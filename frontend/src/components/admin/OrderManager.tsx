@@ -1,4 +1,3 @@
-                <div key={`${item.product.id}-${item.product.selectedColorVariant?.sku || item.product.selectedColorVariant?.colorName || ''}-${item.product.selectedFragranceVariant?.sku || item.product.selectedFragranceVariant?.fragranceName || ''}`} className="flex items-center gap-4">
 import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Clock, Package, Check, X, Truck } from 'lucide-react';
