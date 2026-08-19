@@ -65,7 +65,9 @@ pahadi-craft/
 │   │   │   │   ├── UserManager.tsx       # Customer directory
 │   │   │   │   ├── TeamManager.tsx       # Manage admin logins (developer only)
 │   │   │   │   ├── TestimonialManager.tsx
+│   │   │   │   ├── BannerManager.tsx     # Hero slideshow images, admin-editable
 │   │   │   │   └── common/               # Toast, Modal, LoadingSkeleton, EmptyState, Cards
+│   │   │   ├── ScrollToTop.tsx           # Resets scroll position on route change
 │   │   │   ├── Auth.tsx                  # Customer sign up/in/Google
 │   │   │   ├── Testimonials.tsx          # Homepage reviews section + "share yours" form
 │   │   │   ├── Cart.tsx, Navbar.tsx, Footer.tsx, ProductCard.tsx, etc.
@@ -161,8 +163,37 @@ Both point at the same production MongoDB Atlas by default (via `MONGO_URI`) —
 - [x] Bulk product upload via Excel (.xlsx/.csv) — downloadable template, row-level validation with fix-and-retry error reporting, SKU-based duplicate protection, up to 2000 rows per file
 - [x] Newsletter signup fixed — form had no submit handler at all before (decorative only); now saves to a real `Newsletter` collection, with an admin-readable subscriber list for future campaigns
 
+- [x] Hero section: replaced single dull image with an admin-editable, auto-rotating slideshow (Banner model + BannerManager dashboard page)
+
 ### 🔧 In progress / next up
 - [ ] Facebook footer icon links to `href="#"` (dead link); Twitter/X icon is commented out — need real URLs for Facebook, YouTube, WhatsApp, Threads to wire these up properly
+- [x] Facebook link wired to https://www.facebook.com/neetyarya/ (double-check with owner: this looks like a personal profile, not necessarily a dedicated business page)
+- [ ] YouTube + WhatsApp + Threads links still needed for footer
+
+### 🎨 Site-wide polish list (from owner's detailed walkthrough)
+1. [x] Navbar text weight - bolded across desktop, mobile menu, Admin link, and Sign In/Out button
+2. [x] Hero scroll indicator redesigned (deliberately not auto-scrolling - respects visitor control, replaced generic mouse icon with an on-brand "Explore" cue)
+3. [ ] Featured Products and Trending Products sections - decide whether to show both, one after another
+4. [ ] "Our Collections" section - hardcoded heading/copy and images need to become admin-editable
+5. [x] Nav/footer links scroll to top of destination page now, not the same scroll position (`ScrollToTop.tsx` added and mounted in `App.tsx`)
+21. [ ] Known: `AuthContext.tsx` and `store/authStore.ts` are two separate, duplicate customer-auth wrappers. Not currently broken (both listen to the same Firebase auth instance, so state stays in sync) but worth consolidating into one system eventually to avoid future bugs. Low priority.
+6. [ ] Premium Collections page needs to pull from real admin-managed products (currently likely static/empty)
+7. [ ] Footer needs YouTube link (Facebook done, Instagram done)
+8. [ ] About Us page content, images, and layout need a full creative pass
+9. [ ] Blog page polish + homepage newsletter should redirect to the blog's newsletter section
+10. [ ] Blog overhaul: Hindi author names, real dedicated URL per post (not a popup), functional share button, likes require a logged-in account, liked blogs/products on customer profile, admin CRUD for blog posts
+11. [ ] "Load more articles" needs a friendly empty state when nothing's left ("Enjoy reading!")
+12. [ ] Site-wide: admins need a way to change images anywhere on the site, not just products/banners/testimonials
+13. [ ] Curated Collections section - limit to main categories only, or otherwise make more user-friendly; audit whole site for missing internal links
+14. [ ] Contact page needs real hyperlinks (tel:, mailto:, maps); "Send us a message" should email pahadicraft@gmail.com AND show up in the admin Customers/messages section
+15. [ ] FAQ page needs a content + visual overhaul, needs to merge with Contact page's FAQ section, Contact's "FAQ" link should route to the real FAQ page
+16. [ ] Shipping Info page overhaul; consider Twilio-based shipping status notifications (ties directly into the Phase 2 delivery-partner item already on this list)
+17. [ ] Returns & Exchanges page overhaul; consider consolidating Shipping/Returns/Care Guide into one well-designed "Customer Service" page
+18. [ ] Candle Care Guide, Terms & Conditions, Privacy Policy pages all need a content/visual pass
+19. [ ] Fragrance Guide page is fundamentally wrong right now - has intimidating stock images that shouldn't be there; needs to become a proper list of 50+ fragrances, each conveying a mood/feeling, no images
+20. [ ] Custom Order page needs a UX improvement pass
+
+**Given the size of this list, these are being tackled a few at a time rather than all at once - check the conversation for what's actually been built vs. just logged here.**
 - [ ] Dedicated product detail pages (photo gallery, full description, related products, delivery info) — this is also where the color-swatch picker becomes customer-facing
 - [ ] Delivery partner integration (Delhivery / Expressbees / BlueDart) + Pay on Delivery option
 - [ ] Delivery guidelines, return/refund/exchange policy pages

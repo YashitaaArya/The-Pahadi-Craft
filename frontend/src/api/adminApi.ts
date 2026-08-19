@@ -165,6 +165,57 @@ export const getBanners = async () => {
   return response.data;
 };
 
+export const getAllBannersAdmin = async () => {
+  const response = await api.get('/banners/admin');
+  return response.data;
+};
+
+export const createBanner = async (data: {
+  title: string;
+  description?: string;
+  image: string;
+  link?: string;
+  active?: boolean;
+  position?: number;
+}) => {
+  const response = await api.post('/banners', data);
+  return response.data;
+};
+
+export const updateBanner = async (id: string, data: Partial<{
+  title: string;
+  description: string;
+  image: string;
+  link: string;
+  active: boolean;
+  position: number;
+}>) => {
+  const response = await api.put(`/banners/${id}`, data);
+  return response.data;
+};
+
+export const deleteBanner = async (id: string) => {
+  await api.delete(`/banners/${id}`);
+};
+
+// --- Collections (homepage category showcase) ---
+
+export interface CollectionCard {
+  category: string;
+  image: string;
+  tagline: string;
+}
+
+export const getCollections = async (): Promise<CollectionCard[]> => {
+  const response = await api.get('/collections');
+  return response.data;
+};
+
+export const updateCollection = async (category: string, data: { image?: string; tagline?: string }) => {
+  const response = await api.put(`/collections/${encodeURIComponent(category)}`, data);
+  return response.data;
+};
+
 // --- Admin team management (developer only) ---
 
 export const getAdminTeam = async () => {

@@ -1,56 +1,66 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
+import { getCollections, CollectionCard } from '../api/adminApi';
 
-import luxuryImg from '../images1/11.png';
-import festive from  '../images1/festive.png';
+const PLACEHOLDER = 'https://images.unsplash.com/photo-1602874801007-bd48c7c8f89a?q=80&w=800&auto=format&fit=crop';
 
-const collections = [
-  {
-    id: 1,
-    name: 'Luxury Collection',
-    description: 'Premium candles crafted with the finest ingredients',
-    image: luxuryImg,
-  },
-  {
-    id: 2,
-    name: 'Seasonal Favorites',
-    description: 'Special editions for every season',
-    image: festive,
-  },
-];
+const Collections: React.FC = () => {
+  const [cards, setCards] = useState<CollectionCard[]>([]);
 
-const Collections = () => {
+  useEffect(() => {
+    getCollections()
+      .then(setCards)
+      .catch(() => setCards([]));
+  }, []);
+
+  if (cards.length === 0) return null;
+
   return (
-    <section className="py-16 bg-[#F5E9DA]">
+    <section className="py-20 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
           viewport={{ once: true }}
+          className="text-center mb-12"
         >
-          <h2 className="text-4xl font-serif text-center text-[#5A4232] mb-12">Our Collections</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {collections.map((collection) => (
-              <div
-                key={collection.id}
-                className="relative h-96 rounded-lg overflow-hidden group cursor-pointer"
+          <h2 className="text-4xl font-serif text-[#5A4232] mb-3">Our Collections</h2>
+          <p className="text-gray-500 max-w-2xl mx-auto">
+            Explore handcrafted pieces across every category, each rooted in Himachali tradition.
+          </p>
+        </motion.div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {cards.map((card, idx) => (
+            <motion.div
+              key={card.category}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: idx * 0.08 }}
+              viewport={{ once: true }}
+            >
+              <Link
+                to={`/shop?category=${encodeURIComponent(card.category)}`}
+                className="group block relative rounded-xl overflow-hidden aspect-[4/5] shadow-md"
               >
                 <img
-                  src={collection.image}
-                  alt={collection.name}
-                  className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-300"
+                  src={card.image || PLACEHOLDER}
+                  alt={card.category}
+                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                 />
-                <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                  <div className="text-center">
-                    <h3 className="text-3xl font-serif text-white mb-2">{collection.name}</h3>
-                    <p className="text-[#FFF8F2] max-w-xs mx-auto">{collection.description}</p>
-                  </div>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                <div className="absolute bottom-0 left-0 right-0 p-5 text-white">
+                  <h3 className="font-serif text-xl mb-1">{card.category}</h3>
+                  {card.tagline && (
+                    <p className="text-sm text-white/80">{card.tagline}</p>
+                  )}
                 </div>
-              </div>
-            ))}
-          </div>
-        </motion.div>
+              </Link>
+            </motion.div>
+          ))}
+        </div>
       </div>
     </section>
   );
