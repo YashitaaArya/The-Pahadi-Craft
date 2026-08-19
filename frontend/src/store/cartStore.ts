@@ -5,25 +5,32 @@ interface CartStore {
   items: CartItem[];
   isOpen: boolean;
   addItem: (product: Product, quantity?: number) => void;
-  removeItem: (productId: string) => void;
-  updateQuantity: (productId: string, quantity: number) => void;
+  removeItem: (cartItemKey: string) => void;
+  updateQuantity: (cartItemKey: string, quantity: number) => void;
   clearCart: () => void;
   toggleCart: () => void;
   getTotal: () => number;
   
 }
 
+export const getCartItemKey = (product: Product) => [
+  product.id,
+  product.selectedColorVariant?.sku || product.selectedColorVariant?.colorName || '',
+  product.selectedFragranceVariant?.sku || product.selectedFragranceVariant?.fragranceName || '',
+].join('::');
+
 export const useCartStore = create<CartStore>((set, get) => ({
   items: [],
   isOpen: false,
   addItem: (product, quantity = 1) => {
     const items = get().items;
-    const existingItem = items.find(item => item.product.id === product.id);
+    const cartItemKey = getCartItemKey(product);
+    const existingItem = items.find(item => getCartItemKey(item.product) === cartItemKey);
 
     if (existingItem) {
       set({
         items: items.map(item =>
-          item.product.id === product.id
+          getCartItemKey(item.product) === cartItemKey
             ? { ...item, quantity: item.quantity + quantity }
             : item
         ),
@@ -32,13 +39,13 @@ export const useCartStore = create<CartStore>((set, get) => ({
       set({ items: [...items, { product, quantity }] });
     }
   },
-  removeItem: (productId) => {
-    set({ items: get().items.filter(item => item.product.id !== productId) });
+  removeItem: (cartItemKey) => {
+    set({ items: get().items.filter(item => getCartItemKey(item.product) !== cartItemKey) });
   },
-  updateQuantity: (productId, quantity) => {
+  updateQuantity: (cartItemKey, quantity) => {
     set({
       items: get().items.map(item =>
-        item.product.id === productId
+        getCartItemKey(item.product) === cartItemKey
           ? { ...item, quantity: Math.max(1, quantity) }
           : item
       ),

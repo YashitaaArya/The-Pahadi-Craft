@@ -1,3 +1,4 @@
+                <div key={`${item.product.id}-${item.product.selectedColorVariant?.sku || item.product.selectedColorVariant?.colorName || ''}-${item.product.selectedFragranceVariant?.sku || item.product.selectedFragranceVariant?.fragranceName || ''}`} className="flex items-center gap-4">
 import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Clock, Package, Check, X, Truck } from 'lucide-react';
@@ -87,7 +88,7 @@ const OrderManager: React.FC = () => {
 
             <div className="space-y-4">
               {order.items.map((item) => (
-                <div key={item.product.id} className="flex items-center gap-4">
+                <div key={`${item.product.id}-${item.product.selectedColorVariant?.sku || item.product.selectedColorVariant?.colorName || ''}-${item.product.selectedFragranceVariant?.sku || item.product.selectedFragranceVariant?.fragranceName || ''}`} className="flex items-center gap-4">
                   <img
                     src={getDriveImage(item.product.image)}
                     alt={item.product.name}
@@ -96,6 +97,8 @@ const OrderManager: React.FC = () => {
                   <div>
                     <h4 className="font-medium">{item.product.name}</h4>
                     <p className="text-sm text-gray-500">Quantity: {item.quantity}</p>
+                    {item.product.selectedColorVariant && <p className="text-sm text-gray-500">Color: {item.product.selectedColorVariant.colorName}</p>}
+                    {item.product.selectedFragranceVariant && <p className="text-sm text-gray-500">Fragrance: {item.product.selectedFragranceVariant.fragranceName}</p>}
                     <p className="text-[#C9A66B]">${(item.product.price * item.quantity).toFixed(2)}</p>
                   </div>
                 </div>

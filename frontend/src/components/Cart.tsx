@@ -1,3 +1,5 @@
+import { getCartItemKey, useCartStore } from '../store/cartStore';
+                      key={getCartItemKey(item.product)}
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ShoppingBag, Plus, Minus, Trash2 } from 'lucide-react';
 import { useCartStore } from '../store/cartStore';
@@ -100,7 +102,7 @@ const Cart = () => {
                 <div className="space-y-4">
                   {items.map((item) => (
                     <motion.div
-                      key={item.product.id}
+                      key={getCartItemKey(item.product)}
                       layout
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
@@ -117,10 +119,16 @@ const Cart = () => {
                         <p className="text-[#C9A66B] font-semibold">
                           ₹{item.product.price}
                         </p>
+                        {item.product.selectedColorVariant && (
+                          <p className="text-xs text-gray-600">Color: {item.product.selectedColorVariant.colorName}</p>
+                        )}
+                        {item.product.selectedFragranceVariant && (
+                          <p className="text-xs text-gray-600">Fragrance: {item.product.selectedFragranceVariant.fragranceName}</p>
+                        )}
                         <div className="flex items-center gap-2 mt-2">
                           <button
                             onClick={() =>
-                              updateQuantity(item.product.id, item.quantity - 1)
+                              updateQuantity(getCartItemKey(item.product), item.quantity - 1)
                             }
                             className="p-1 hover:bg-[#F5E9DA] rounded-full transition-colors"
                           >
@@ -129,14 +137,14 @@ const Cart = () => {
                           <span className="w-8 text-center">{item.quantity}</span>
                           <button
                             onClick={() =>
-                              updateQuantity(item.product.id, item.quantity + 1)
+                              updateQuantity(getCartItemKey(item.product), item.quantity + 1)
                             }
                             className="p-1 hover:bg-[#F5E9DA] rounded-full transition-colors"
                           >
                             <Plus className="w-4 h-4 text-[#5A4232]" />
                           </button>
                           <button
-                            onClick={() => removeItem(item.product.id)}
+                            onClick={() => removeItem(getCartItemKey(item.product))}
                             className="ml-auto p-1 hover:bg-red-50 rounded-full transition-colors"
                           >
                             <Trash2 className="w-4 h-4 text-red-500" />

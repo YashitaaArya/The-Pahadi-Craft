@@ -75,7 +75,7 @@ const Footer = () => {
               Illuminating spaces with handcrafted elegance since 2017. Artisan crafts that bring the essence of mountain craftsmanship to your home.
             </p>
             <div className="flex space-x-4">
-              <a href="https://www.facebook.com/neetyarya" className="w-10 h-10 rounded-full bg-[#3A2A20] flex items-center justify-center hover:bg-[#C9A66B] transition-colors duration-300">
+              <a href="https://www.facebook.com/pahadicraft" className="w-10 h-10 rounded-full bg-[#3A2A20] flex items-center justify-center hover:bg-[#C9A66B] transition-colors duration-300">
                 <Facebook className="w-5 h-5" />
               </a>
               <a
