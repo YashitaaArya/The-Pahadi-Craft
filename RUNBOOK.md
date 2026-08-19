@@ -24,7 +24,7 @@ pahadi-craft/
 │   ├── models/
 │   │   ├── User.js               # Customers (from Firebase login)
 │   │   ├── order.js
-│   │   ├── Product.js            # 3-tier categories, color variants, scented/size/volume/capacity
+│   │   ├── Product.js            # 3-tier categories, color variants, scented/size/volume/Weight
 │   │   ├── AdminUser.js          # Admin dashboard logins
 │   │   ├── Review.js
 │   │   ├── Testimonial.js        # images: string[] - product/purchase photos, not profile pics

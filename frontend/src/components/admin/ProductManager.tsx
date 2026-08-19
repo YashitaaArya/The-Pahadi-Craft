@@ -92,8 +92,10 @@ const ProductManager: React.FC = () => {
         secondarySubcategory: '',
         scented: false,
         size: '',
+        material: '',
+        numberOfItems: 1,
         volume: '',
-        capacity: '',
+        Weight: '',
         stock: 0,
         sku: '',
         image: '',
@@ -143,6 +145,7 @@ const ProductManager: React.FC = () => {
       setColorVariants(product.colorVariants || []);
       reset({
         ...product,
+        Weight: product.Weight || product.weight || '',
         additionalImagesText: (
           product.additionalImages?.join('\n') ||
           product.addtionalImages?.join('\n') ||
@@ -163,8 +166,10 @@ const ProductManager: React.FC = () => {
         secondarySubcategory: '',
         scented: false,
         size: '',
+        material: '',
+        numberOfItems: 1,
         volume: '',
-        capacity: '',
+        Weight: '',
         stock: 0,
         sku: '',
         image: '',
@@ -379,12 +384,22 @@ const ProductManager: React.FC = () => {
                       </p>
                     </div>
                     <div>
+                      <p className="text-gray-500">Items / product</p>
+                      <p className="font-semibold text-gray-900">{product.numberOfItems ?? 1}</p>
+                    </div>
+                    <div>
                       <p className="text-gray-500">Rating</p>
                       <p className="font-semibold text-gray-900">{product.ratings ? product.ratings.toFixed(1) : 'N/A'} ⭐</p>
                     </div>
                   </div>
 
                   <p className="text-sm text-gray-600 line-clamp-1">{product.description}</p>
+
+                  <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-xs text-gray-500">
+                    {product.material && <span>Material: {product.material}</span>}
+                    {product.volume && <span>Capacity: {product.volume}</span>}
+                    {(product.Weight || product.weight) && <span>Weight: {product.Weight || product.weight}</span>}
+                  </div>
 
                   <div className="flex items-center gap-3 mt-2">
                     {product.scented && (
@@ -585,19 +600,27 @@ const ProductManager: React.FC = () => {
             </div>
           </div>
 
-          {/* Size / Volume / Capacity / Scented */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {/* Size, material, pack details, capacity, and weight */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Size</label>
               <input type="text" {...register('size')} className="input" placeholder='e.g. 4 x 6 in' />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Volume</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Material</label>
+              <input type="text" {...register('material')} className="input" placeholder="e.g. Soy wax and glass" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Number of Items</label>
+              <input type="number" {...register('numberOfItems', { valueAsNumber: true, min: 1 })} className="input" placeholder="1" min="1" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Capacity / Volume</label>
               <input type="text" {...register('volume')} className="input" placeholder="e.g. 250ml" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Capacity</label>
-              <input type="text" {...register('capacity')} className="input" placeholder="e.g. 500g" />
+              <label className="block text-sm font-medium text-gray-700 mb-1">Weight</label>
+              <input type="text" {...register('Weight')} className="input" placeholder="e.g. 500g" />
             </div>
             <div className="flex items-end pb-2">
               <label className="flex items-center gap-2 cursor-pointer">

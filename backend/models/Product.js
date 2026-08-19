@@ -28,8 +28,10 @@ const productSchema = new mongoose.Schema({
 
   scented: { type: Boolean, default: false },
   size: { type: String, default: '' },       // free text, e.g. "4 x 6 in"
+  material: { type: String, default: '' },
+  numberOfItems: { type: Number, default: 1, min: 1 },
   volume: { type: String, default: '' },     // free text, e.g. "250ml"
-  capacity: { type: String, default: '' },   // free text, e.g. "500g"
+  Weight: { type: String, default: '' },   // free text, e.g. "500g"
 
   colorVariants: { type: [colorVariantSchema], default: [] },
 
