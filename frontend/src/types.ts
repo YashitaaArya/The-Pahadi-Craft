@@ -21,8 +21,10 @@ export interface Product {
   secondarySubcategory?: string;
   scented?: boolean;
   size?: string;
+  material?: string;
+  numberOfItems?: number;
   volume?: string;
-  capacity?: string;
+  Weight?: string;
   colorVariants?: ProductColorVariant[];
   fragranceNotes?: string[];
   ingredients?: string[];

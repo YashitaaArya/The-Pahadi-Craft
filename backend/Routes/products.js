@@ -58,13 +58,13 @@ router.get('/:id', async (req, res) => {
 router.get('/bulk-import/template', adminAuth, requirePermission('products:write'), (req, res) => {
   const headers = [
     'Name', 'Description', 'Price', 'Main Category', 'Prime Subcategory',
-    'Secondary Subcategory', 'Scented (Yes/No)', 'Size', 'Volume', 'Capacity',
+    'Secondary Subcategory', 'Scented (Yes/No)', 'Size', 'Material', 'Number of Items', 'Capacity / Volume', 'Weight',
     'Stock', 'SKU', 'Featured (Yes/No)', 'Trending (Yes/No)', 'Tags (comma separated)',
     'Artisan Info', 'Discount (%)',
   ];
   const exampleRow = [
     'Himachali Saffron Candle', 'A hand-poured saffron candle infused with natural Himalayan fragrance.',
-    899, 'Candles', 'Glass Jar Candles', 'Premium', 'Yes', '4 x 6 in', '250ml', '',
+    899, 'Candles', 'Glass Jar Candles', 'Premium', 'Yes', '4 x 6 in', 'Glass', 1, '250ml', '',
     28, 'CND-001', 'Yes', 'Yes', 'handmade, himachali, saffron',
     'Crafted by local artisans from Kullu.', 10,
   ];
@@ -177,8 +177,10 @@ router.post('/bulk-import', adminAuth, requirePermission('products:write'), (req
       secondarySubcategory: String(row['Secondary Subcategory'] || ''),
       scented: parseBoolCell(row['Scented (Yes/No)']),
       size: String(row['Size'] || ''),
-      volume: String(row['Volume'] || ''),
-      capacity: String(row['Capacity'] || ''),
+      material: String(row['Material'] || ''),
+      numberOfItems: Math.max(1, Number(row['Number of Items']) || 1),
+      volume: String(row['Capacity / Volume'] || row['Volume'] || ''),
+      Weight: String(row['Weight'] || ''),
       stock,
       sku: String(row['SKU'] || ''),
       featured: parseBoolCell(row['Featured (Yes/No)']),

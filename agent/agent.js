@@ -28,7 +28,7 @@ const FIELD_NAME_MAP = {
   'secondary subcategory': ['input[name="secondarySubcategory"]'],
   'size': ['input[name="size"]'],
   'volume': ['input[name="volume"]'],
-  'capacity': ['input[name="capacity"]'],
+  'Weight': ['input[name="Weight"]'],
   'scented': ['input[name="scented"]'],
   'mark as featured': ['input[name="featured"]', 'input[name="isFeatured"]'],
   'mark as trending': ['input[name="trending"]', 'input[name="isTrending"]'],
