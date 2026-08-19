@@ -69,7 +69,7 @@ const Navbar = () => {
               <Link
                 key={link.path}
                 to={link.path}
-                className="relative text-[#3B2A1C]  hover:text-[#C9A66B] transition-colors duration-300 after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-[#C9A66B] after:scale-x-0 after:origin-right after:transition-transform hover:after:scale-x-100 hover:after:origin-left"
+                className="relative text-[#3B2A1C] font-semibold hover:text-[#C9A66B] transition-colors duration-300 after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-[#C9A66B] after:scale-x-0 after:origin-right after:transition-transform hover:after:scale-x-100 hover:after:origin-left"
               >
                 {link.label}
               </Link>
@@ -77,7 +77,7 @@ const Navbar = () => {
             {user?.role === 'admin' && (
               <Link
                 to="/admin"
-                className="relative text-[#3B2A1C]  hover:text-[#C9A66B] transition-colors duration-300"
+                className="relative text-[#3B2A1C] font-semibold hover:text-[#C9A66B] transition-colors duration-300"
               >
                 Admin
               </Link>
@@ -205,7 +205,7 @@ const Navbar = () => {
                 >
                   <Link
                     to={link.path}
-                    className="block px-3 py-2 text-[#5A4232] hover:text-[#C9A66B] hover:bg-[#F5E9DA] rounded-md transition-all duration-300"
+                    className="block px-3 py-2 text-[#5A4232] font-semibold hover:text-[#C9A66B] hover:bg-[#F5E9DA] rounded-md transition-all duration-300"
                     onClick={() => setIsOpen(false)}
                   >
                     {link.label}
@@ -220,7 +220,7 @@ const Navbar = () => {
                 >
                   <Link
                     to="/admin"
-                    className="block px-3 py-2 text-[#5A4232] hover:text-[#C9A66B] hover:bg-[#F5E9DA] rounded-md transition-all duration-300"
+                    className="block px-3 py-2 text-[#5A4232] font-semibold hover:text-[#C9A66B] hover:bg-[#F5E9DA] rounded-md transition-all duration-300"
                     onClick={() => setIsOpen(false)}
                   >
                     Admin
@@ -237,7 +237,7 @@ const Navbar = () => {
                     handleAuthClick();
                     setIsOpen(false);
                   }}
-                  className="w-full text-left px-3 py-2 text-[#5A4232] hover:text-[#C9A66B] hover:bg-[#F5E9DA] rounded-md transition-all duration-300"
+                  className="w-full text-left px-3 py-2 text-[#5A4232] font-semibold hover:text-[#C9A66B] hover:bg-[#F5E9DA] rounded-md transition-all duration-300"
                 >
                   {user ? 'Sign Out' : 'Sign In'}
                 </button>
