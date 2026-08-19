@@ -98,7 +98,7 @@ const OrderManager: React.FC = () => {
                     <p className="text-sm text-gray-500">Quantity: {item.quantity}</p>
                     {item.product.selectedColorVariant && <p className="text-sm text-gray-500">Color: {item.product.selectedColorVariant.colorName}</p>}
                     {item.product.selectedFragranceVariant && <p className="text-sm text-gray-500">Fragrance: {item.product.selectedFragranceVariant.fragranceName}</p>}
-                    <p className="text-[#C9A66B]">${(item.product.price * item.quantity).toFixed(2)}</p>
+                    <p className="text-[#C9A66B]">₹{(item.product.price * item.quantity).toFixed(2)}</p>
                   </div>
                 </div>
               ))}
@@ -108,7 +108,7 @@ const OrderManager: React.FC = () => {
               <div className="flex justify-between items-center">
                 <div>
                   <p className="text-sm text-gray-500">Total Amount</p>
-                  <p className="text-xl font-medium">${order.total.toFixed(2)}</p>
+                  <p className="text-xl font-medium">₹{order.total.toFixed(2)}</p>
                 </div>
                 <select
                   value={order.status}
