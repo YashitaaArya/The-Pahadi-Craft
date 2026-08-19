@@ -13,8 +13,18 @@ const orderSchema = new mongoose.Schema({
     {
       productId: String,
       name: String,
+      image: String,
       quantity: Number,
-      price: Number
+      price: Number,
+      selectedColorVariant: {
+        colorName: String,
+        hexCode: String,
+        sku: String
+      },
+      selectedFragranceVariant: {
+        fragranceName: String,
+        sku: String
+      }
     }
   ],
   totalAmount: Number,
@@ -28,10 +38,17 @@ const orderSchema = new mongoose.Schema({
   // Order fulfillment status - separate from payment status, used by the admin dashboard
   status: {
     type: String,
-    enum: ['pending', 'processing', 'shipped', 'delivered', 'cancelled'],
+    enum: ['pending', 'processing', 'dispatched', 'shipped', 'delivered', 'cancelled'],
     default: 'pending'
   },
   trackingNumber: { type: String, default: '' },
+  statusHistory: [{
+    status: {
+      type: String,
+      enum: ['pending', 'processing', 'dispatched', 'shipped', 'delivered', 'cancelled']
+    },
+    changedAt: { type: Date, default: Date.now }
+  }],
   createdAt: { type: Date, default: Date.now }
 });
 

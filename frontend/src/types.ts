@@ -127,7 +127,7 @@ export interface Order {
   id: string;
   userId: string;
   items: CartItem[];
-  status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+  status: 'pending' | 'processing' | 'dispatched' | 'shipped' | 'delivered' | 'cancelled';
   total: number;
   shippingAddress: Address;
   paymentStatus: 'pending' | 'paid' | 'failed';
@@ -135,7 +135,14 @@ export interface Order {
   updatedAt?: string;
   customerName?: string;
   customerEmail?: string;
+  customerPhone?: string;
   trackingNumber?: string;
+  statusHistory?: OrderStatusUpdate[];
+}
+
+export interface OrderStatusUpdate {
+  status: Order['status'];
+  changedAt: string;
 }
 
 export interface Address {

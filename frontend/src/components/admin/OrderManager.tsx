@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Clock, Package, Check, X, Truck } from 'lucide-react';
+import { Clock, Package, Check, X, Truck, MapPin, Phone, Mail } from 'lucide-react';
 import { useAdminDashboardStore } from '../../store/adminDashboardStore';
 import { getDriveImage } from '../../utils/driveImage';
 import { DashboardLoadingSkeleton, EmptyState } from './common';
@@ -19,6 +19,8 @@ const OrderManager: React.FC = () => {
         return <Clock className="w-5 h-5 text-yellow-500" />;
       case 'processing':
         return <Package className="w-5 h-5 text-blue-500" />;
+      case 'dispatched':
+        return <Truck className="w-5 h-5 text-indigo-500" />;
       case 'shipped':
         return <Truck className="w-5 h-5 text-green-500" />;
       case 'delivered':
@@ -36,6 +38,8 @@ const OrderManager: React.FC = () => {
         return 'bg-yellow-100 text-yellow-800';
       case 'processing':
         return 'bg-blue-100 text-blue-800';
+      case 'dispatched':
+        return 'bg-indigo-100 text-indigo-800';
       case 'shipped':
         return 'bg-green-100 text-green-800';
       case 'delivered':
@@ -104,23 +108,47 @@ const OrderManager: React.FC = () => {
               ))}
             </div>
 
+            <div className="mt-6 grid gap-4 border-t pt-4 md:grid-cols-2">
+              <div>
+                <h4 className="font-medium text-gray-800">Customer</h4>
+                <p className="text-sm text-gray-600">{order.customerName || 'Name not provided'}</p>
+                {order.customerEmail && <p className="flex items-center gap-2 text-sm text-gray-600"><Mail className="w-4 h-4" />{order.customerEmail}</p>}
+                {order.customerPhone && <p className="flex items-center gap-2 text-sm text-gray-600"><Phone className="w-4 h-4" />{order.customerPhone}</p>}
+              </div>
+              <div>
+                <h4 className="flex items-center gap-2 font-medium text-gray-800"><MapPin className="w-4 h-4" />Shipping details</h4>
+                <p className="text-sm text-gray-600">{order.shippingAddress.street}</p>
+                <p className="text-sm text-gray-600">{order.shippingAddress.city}, {order.shippingAddress.state} {order.shippingAddress.zipCode}</p>
+                <p className="text-sm text-gray-600">{order.shippingAddress.country}</p>
+              </div>
+            </div>
+
             <div className="mt-6 pt-4 border-t">
               <div className="flex justify-between items-center">
                 <div>
                   <p className="text-sm text-gray-500">Total Amount</p>
                   <p className="text-xl font-medium">₹{order.total.toFixed(2)}</p>
                 </div>
-                <select
-                  value={order.status}
-                  onChange={(e) => updateOrderStatus(order.id, e.target.value as Order['status'])}
-                  className="px-4 py-2 rounded-full border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#C9A66B]"
-                >
-                  <option value="pending">Pending</option>
-                  <option value="processing">Processing</option>
-                  <option value="shipped">Shipped</option>
-                  <option value="delivered">Delivered</option>
-                  <option value="cancelled">Cancelled</option>
-                </select>
+                <div className="flex flex-col items-end gap-2">
+                  <select
+                    value={order.status}
+                    onChange={(e) => updateOrderStatus(order.id, e.target.value as Order['status'])}
+                    className="px-4 py-2 rounded-full border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#C9A66B]"
+                  >
+                    <option value="pending">Pending</option>
+                    <option value="processing">Processing</option>
+                    <option value="dispatched">Dispatched</option>
+                    <option value="shipped">Shipped</option>
+                    <option value="delivered">Delivered</option>
+                    <option value="cancelled">Cancelled</option>
+                  </select>
+                  <input
+                    defaultValue={order.trackingNumber || ''}
+                    onBlur={(e) => updateOrderShipping(order.id, e.target.value.trim())}
+                    placeholder="Tracking number"
+                    className="w-48 px-3 py-2 text-sm rounded border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#C9A66B]"
+                  />
+                </div>
               </div>
             </div>
           </motion.div>
