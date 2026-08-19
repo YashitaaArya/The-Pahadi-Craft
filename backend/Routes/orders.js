@@ -16,8 +16,16 @@ router.get('/', adminAuth, requirePermission('orders:read'), async (req, res) =>
         userId: o.user ? o.user._id.toString() : '',
         customerName: json.name || (o.user && o.user.name) || '',
         customerEmail: (o.user && o.user.email) || '',
+        customerPhone: json.phone || (o.user && o.user.phone) || '',
         items: (json.items || []).map((it) => ({
-          product: { id: it.productId, name: it.name, price: it.price },
+          product: {
+            id: it.productId,
+            name: it.name,
+            image: it.image || '',
+            price: it.price,
+            selectedColorVariant: it.selectedColorVariant,
+            selectedFragranceVariant: it.selectedFragranceVariant
+          },
           quantity: it.quantity,
         })),
         status: json.status || 'pending',
@@ -31,7 +39,9 @@ router.get('/', adminAuth, requirePermission('orders:read'), async (req, res) =>
         },
         paymentStatus: json.paymentStatus === 'completed' ? 'paid' : json.paymentStatus,
         createdAt: json.createdAt,
+        updatedAt: json.updatedAt,
         trackingNumber: json.trackingNumber || '',
+        statusHistory: json.statusHistory || [],
       };
     });
     res.json(formatted);
@@ -48,8 +58,12 @@ router.patch('/:id/status', adminAuth, requirePermission('orders:write'), async 
     const update = {};
     if (status) update.status = status;
     if (trackingNumber !== undefined) update.trackingNumber = trackingNumber;
+    const existingOrder = await Order.findById(req.params.id);
+    if (!existingOrder) return res.status(404).json({ error: 'Order not found' });
+    if (status && status !== existingOrder.status) {
+      update.$push = { statusHistory: { status, changedAt: new Date() } };
+    }
     const order = await Order.findByIdAndUpdate(req.params.id, update, { new: true });
-    if (!order) return res.status(404).json({ error: 'Order not found' });
     res.json(order.toJSON());
   } catch (err) {
     res.status(500).json({ error: 'Failed to update order' });
@@ -70,12 +84,33 @@ router.get('/me/:uid',  async (req, res) => {
         }
 
         const orders = await Order.find({ user: user._id })
-            .select('orderAmount orderStatus createdAt items totalAmount')
             .sort({ createdAt: -1 });
 
         res.json({ 
             success: true, 
-            orders,
+            orders: orders.map((order) => {
+              const json = order.toJSON();
+              return {
+                id: json.id,
+                createdAt: json.createdAt,
+                updatedAt: json.updatedAt,
+                customerName: json.name || '',
+                customerPhone: json.phone || '',
+                items: json.items || [],
+                totalAmount: json.totalAmount || 0,
+                paymentStatus: json.paymentStatus,
+                status: json.status || 'pending',
+                trackingNumber: json.trackingNumber || '',
+                shippingAddress: {
+                  street: json.address || '',
+                  city: json.city || '',
+                  state: json.state || '',
+                  zipCode: json.zip || '',
+                  country: json.country || ''
+                },
+                statusHistory: json.statusHistory || []
+              };
+            }),
             count: orders.length 
         });
     } catch (err) {

@@ -69,13 +69,24 @@ router.post('/', async (req, res) => {
           items: items.map(item => ({
             productId: item.product.id,
             name: item.product.name,
+            image: item.product.image,
             quantity: item.quantity,
-            price: item.product.price
+            price: item.product.price,
+            selectedColorVariant: item.product.selectedColorVariant ? {
+              colorName: item.product.selectedColorVariant.colorName,
+              hexCode: item.product.selectedColorVariant.hexCode,
+              sku: item.product.selectedColorVariant.sku
+            } : undefined,
+            selectedFragranceVariant: item.product.selectedFragranceVariant ? {
+              fragranceName: item.product.selectedFragranceVariant.fragranceName,
+              sku: item.product.selectedFragranceVariant.sku
+            } : undefined
           })),
           totalAmount: amount,
           razorpay_order_id,
           razorpay_payment_id,
-          paymentStatus: 'completed'
+          paymentStatus: 'completed',
+          statusHistory: [{ status: 'pending' }]
         });
       } catch (dbError) {
         console.error("Database Error (Order):", dbError);

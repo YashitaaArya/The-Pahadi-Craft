@@ -4,13 +4,33 @@ import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 
 // Add these interfaces
+interface OrderItem {
+  productId: string;
+  name: string;
+  image?: string;
+  quantity: number;
+  price: number;
+  selectedColorVariant?: { colorName?: string; hexCode?: string; sku?: string };
+  selectedFragranceVariant?: { fragranceName?: string; sku?: string };
+}
+
+interface OrderStatusUpdate {
+  status: string;
+  changedAt: string;
+}
+
 interface Order {
-  _id: string;
-  orderAmount: number;
-  orderStatus: string;
+  id: string;
   createdAt: string;
-  items?: { name: string; quantity: number; price: number }[]; // Add items field for order details
-  totalAmount?: number; // Add totalAmount field if needed
+  customerName: string;
+  customerPhone: string;
+  items: OrderItem[];
+  totalAmount: number;
+  paymentStatus: string;
+  status: string;
+  trackingNumber: string;
+  shippingAddress: { street: string; city: string; state: string; zipCode: string; country: string };
+  statusHistory: OrderStatusUpdate[];
 }
 
 const UserProfile = () => {
@@ -175,6 +195,8 @@ const UserProfile = () => {
   useEffect(() => {
     if (isAuthenticated && user) {
       fetchOrders();
+      const refreshInterval = window.setInterval(fetchOrders, 30000);
+      return () => window.clearInterval(refreshInterval);
     }
   }, [isAuthenticated, user]);
 
@@ -260,48 +282,64 @@ const UserProfile = () => {
                     <div className="space-y-4">
                       {orders.map((order) => (
                         <div
-                          key={order._id}
+                          key={order.id}
                           className="border rounded-lg p-4 cursor-pointer"
                           onClick={() =>
-                            setExpandedOrderId(expandedOrderId === order._id ? null : order._id)
+                            setExpandedOrderId(expandedOrderId === order.id ? null : order.id)
                           }
                         >
                           <div className="flex justify-between items-center">
                             <div>
-                              <p className="font-medium">Order ID: {order._id}</p>
+                              <p className="font-medium">Order ID: {order.id}</p>
                               <p className="text-sm text-gray-600">
-                                Date: {new Date(order.createdAt).toLocaleDateString()}
+                                Ordered: {new Date(order.createdAt).toLocaleString()}
                               </p>
                             </div>
                             <div className="text-right">
-                              <p className="font-medium">₹{order.totalAmount ?? order.orderAmount}</p>
-                              <p
-                                className={`text-sm ${
-                                  order.orderStatus === 'completed'
-                                    ? 'text-green-600'
-                                    : 'text-orange-600'
-                                }`}
-                              >
-                                {order.orderStatus}
-                              </p>
+                              <p className="font-medium">₹{order.totalAmount.toFixed(2)}</p>
+                              <p className="text-sm capitalize text-green-600">{order.status}</p>
                             </div>
                           </div>
-                          {expandedOrderId === order._id && (
-                            <div className="mt-4 bg-gray-50 rounded p-3">
-                              <h4 className="font-semibold mb-2">Items</h4>
-                              <ul className="mb-2">
-                                {(order.items || []).map((item: any, idx: number) => (
-                                  <li key={idx} className="flex justify-between py-1 border-b last:border-b-0">
-                                    <span>
-                                      {item.name} x {item.quantity}
-                                    </span>
-                                    <span>₹{item.price}</span>
-                                  </li>
-                                ))}
-                              </ul>
-                              <div className="flex justify-between font-semibold mt-2">
+                          {expandedOrderId === order.id && (
+                            <div className="mt-4 grid gap-5 bg-gray-50 rounded p-4 md:grid-cols-2">
+                              <div className="md:col-span-2">
+                                <h4 className="font-semibold mb-2">Items</h4>
+                                <ul className="space-y-2">
+                                  {order.items.map((item) => (
+                                    <li key={`${item.productId}-${item.selectedColorVariant?.sku || ''}-${item.selectedFragranceVariant?.sku || ''}`} className="border-b pb-2 last:border-b-0">
+                                      <div className="flex justify-between">
+                                        <span>{item.name} x {item.quantity}</span>
+                                        <span>₹{(item.price * item.quantity).toFixed(2)}</span>
+                                      </div>
+                                      {item.selectedColorVariant?.colorName && <p className="text-sm text-gray-600">Colour: {item.selectedColorVariant.colorName}</p>}
+                                      {item.selectedFragranceVariant?.fragranceName && <p className="text-sm text-gray-600">Fragrance: {item.selectedFragranceVariant.fragranceName}</p>}
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                              <div>
+                                <h4 className="font-semibold mb-1">Shipping and contact</h4>
+                                <p>{order.customerName} {order.customerPhone && `| ${order.customerPhone}`}</p>
+                                <p>{order.shippingAddress.street}</p>
+                                <p>{order.shippingAddress.city}, {order.shippingAddress.state} {order.shippingAddress.zipCode}</p>
+                                <p>{order.shippingAddress.country}</p>
+                              </div>
+                              <div>
+                                <h4 className="font-semibold mb-1">Delivery updates</h4>
+                                <p className="capitalize">Current status: {order.status}</p>
+                                <p>Payment: <span className="capitalize">{order.paymentStatus}</span></p>
+                                {order.trackingNumber && <p>Tracking: {order.trackingNumber}</p>}
+                                <ul className="mt-2 space-y-1 text-sm text-gray-600">
+                                  {order.statusHistory.map((update, index) => (
+                                    <li key={`${update.changedAt}-${index}`} className="capitalize">
+                                      {update.status} - {new Date(update.changedAt).toLocaleString()}
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                              <div className="flex justify-between font-semibold md:col-span-2 border-t pt-3">
                                 <span>Total Amount:</span>
-                                <span>₹{order.totalAmount ?? order.orderAmount}</span>
+                                <span>₹{order.totalAmount.toFixed(2)}</span>
                               </div>
                             </div>
                           )}
