@@ -291,7 +291,7 @@ const Checkout: React.FC = () => {
                   <span>₹{(item.product.price * item.quantity).toFixed(2)}</span>
                 </li>
               ))}
-            </ul>
+            {/* </ul> */}
             <div className="flex justify-between font-semibold">
               <span>Total</span>
               <span>₹{getTotal().toFixed(2)}</span>
