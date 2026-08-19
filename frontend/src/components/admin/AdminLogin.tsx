@@ -151,7 +151,7 @@ const AdminLogin: React.FC = () => {
           transition={{ delay: 0.2 }}
           className="mt-6 text-center text-gray-200 text-sm"
         >
-          <p>🔒 Secure admin access only. Session limited to 24 hours.</p>
+          {/* <p>🔒 Secure admin access only. Session limited to 24 hours.</p> */}
         </motion.div>
       </motion.div>
     </div>
