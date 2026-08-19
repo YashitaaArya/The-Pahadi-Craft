@@ -6,6 +6,12 @@ export interface ProductColorVariant {
   sku: string;
 }
 
+export interface ProductFragranceVariant {
+  fragranceName: string;
+  stock: number;
+  sku: string;
+}
+
 export interface Product {
   id: string;
   name: string;
@@ -26,6 +32,7 @@ export interface Product {
   volume?: string;
   Weight?: string;
   colorVariants?: ProductColorVariant[];
+  fragranceVariants?: ProductFragranceVariant[];
   fragranceNotes?: string[];
   ingredients?: string[];
   burnTime?: string;

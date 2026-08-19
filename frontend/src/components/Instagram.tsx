@@ -1,10 +1,11 @@
-import React from 'react';
 import { motion } from 'framer-motion';
 import { Instagram as InstagramIcon } from 'lucide-react';
 
-import insta1 from '../images1/insta1.png';
+import {Facebook as FacebookIcon} from 'lucide-react';
+import {Youtube as YoutubeIcon} from 'lucide-react';
+import {Linkedin as LinkedinIcon} from 'lucide-react';
+
 import insta2 from '../images1/insta2.png';
-import insta3 from '../images1/insta3.png';
 
 const instagramPosts = [
   {
@@ -27,6 +28,22 @@ const instagramPosts = [
 
 const Instagram = () => {
   const instagramLink = 'https://www.instagram.com/pahadi_craft?igsh=MWZja2s0cXNycTNnZA==';
+  const FacebookLink = 'https://www.facebook.com/neetyarya';
+  const YoutubeLink = 'https://www.youtube.com/@PahadiCraft';
+  const LinkedinLink = 'https://www.linkedin.com/company/pahadi-craft/';
+
+  const socialLinks = [
+    { label: 'Instagram', href: instagramLink, icon: InstagramIcon },
+    { label: 'Facebook', href: FacebookLink, icon: FacebookIcon },
+    { label: 'YouTube', href: YoutubeLink, icon: YoutubeIcon },
+    { label: 'LinkedIn', href: LinkedinLink, icon: LinkedinIcon },
+  ];
+
+  const linkedPosts = instagramPosts.map((post, index) => ({
+    ...post,
+    href: socialLinks[index % socialLinks.length].href,
+    label: socialLinks[index % socialLinks.length].label,
+  }));
 
   return (
     <section className="py-16 bg-white">
@@ -42,17 +59,17 @@ const Instagram = () => {
             <h2 className="text-4xl font-serif text-center text-[#5A4232]">Follow Us on Instagram</h2>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {instagramPosts.map((post) => (
+            {linkedPosts.map((post) => (
               <a
                 key={post.id}
-                href={instagramLink}
+                href={post.href}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="relative aspect-square group overflow-hidden block"
               >
                 <img
                   src={post.image}
-                  alt="Instagram post"
+                  alt={`${post.label} post`}
                   className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-300"
                 />
                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
@@ -62,15 +79,21 @@ const Instagram = () => {
             ))}
           </div>
           <div className="text-center mt-8">
-            <a
-              href={instagramLink}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 text-[#5A4232] hover:text-[#C9A66B] transition-colors"
-            >
-              <span>@PahadiCraft</span>
-              <InstagramIcon className="w-5 h-5" />
-            </a>
+            <div className="flex items-center justify-center gap-5">
+              {socialLinks.map(({ label, href, icon: Icon }) => (
+                <a
+                  key={label}
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`Visit Pahadi Craft on ${label}`}
+                  title={label}
+                  className="text-[#5A4232] hover:text-[#C9A66B] transition-colors"
+                >
+                  <Icon className="w-5 h-5" />
+                </a>
+              ))}
+            </div>
           </div>
         </motion.div>
       </div>

@@ -1,9 +1,9 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Edit2, Trash2, Search, Filter, ChevronDown, UploadCloud, Loader2 } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Plus, Edit2, Trash2, Search, UploadCloud, Loader2 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { useAdminDashboardStore } from '../../store/adminDashboardStore';
-import { Product, ProductColorVariant } from '../../types';
+import { Product, ProductColorVariant, ProductFragranceVariant } from '../../types';
 import { getDriveImage } from '../../utils/driveImage';
 import { uploadProductImage, getProductCategories } from '../../api/adminApi';
 import { compressImage } from '../../utils/compressImage';
@@ -30,6 +30,25 @@ const MAIN_CATEGORIES = [
   'Terracotta / Clay',
   'Occasion-Based',
 ];
+
+const resolveColorToHex = (value: string, fallback: string) => {
+  if (!value.trim() || typeof document === 'undefined') return fallback;
+  const canvas = document.createElement('canvas');
+  const context = canvas.getContext('2d');
+  if (!context) return fallback;
+  context.fillStyle = fallback;
+  context.fillStyle = value.trim();
+  const resolved = context.fillStyle;
+  if (resolved.startsWith('#')) {
+    return resolved.length === 4
+      ? `#${resolved[1]}${resolved[1]}${resolved[2]}${resolved[2]}${resolved[3]}${resolved[3]}`.toUpperCase()
+      : resolved.toUpperCase();
+  }
+  const rgb = resolved.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+  return rgb
+    ? `#${[rgb[1], rgb[2], rgb[3]].map((channel) => Number(channel).toString(16).padStart(2, '0')).join('')}`.toUpperCase()
+    : fallback;
+};
 
 interface ProductFormData extends Omit<Product, 'id'> {
   additionalImagesText?: string;
@@ -60,6 +79,7 @@ const ProductManager: React.FC = () => {
     secondarySubcategories: [],
   });
   const [colorVariants, setColorVariants] = useState<ProductColorVariant[]>([]);
+  const [fragranceVariants, setFragranceVariants] = useState<ProductFragranceVariant[]>([]);
   const [uploadingVariantIndex, setUploadingVariantIndex] = useState<number | null>(null);
   const [bulkUploadOpen, setBulkUploadOpen] = useState(false);
 
@@ -143,6 +163,7 @@ const ProductManager: React.FC = () => {
     if (product) {
       setEditingProduct(product);
       setColorVariants(product.colorVariants || []);
+      setFragranceVariants(product.fragranceVariants || []);
       reset({
         ...product,
         Weight: product.Weight || product.weight || '',
@@ -155,6 +176,7 @@ const ProductManager: React.FC = () => {
     } else {
       setEditingProduct(null);
       setColorVariants([]);
+      setFragranceVariants([]);
       reset({
         name: '',
         description: '',
@@ -185,6 +207,7 @@ const ProductManager: React.FC = () => {
     setIsModalOpen(false);
     setEditingProduct(null);
     setColorVariants([]);
+    setFragranceVariants([]);
     reset();
   };
 
@@ -218,6 +241,7 @@ const ProductManager: React.FC = () => {
         image: normalizedImage,
         additionalImages: parsedAdditionalImages,
         colorVariants,
+        fragranceVariants,
       };
 
       if (editingProduct) {
@@ -860,6 +884,7 @@ const ProductManager: React.FC = () => {
                           className="w-10 h-10 rounded-full border border-gray-300 cursor-pointer p-0"
                           title="Swatch color"
                         />
+                        <span className="text-[10px] text-gray-500 uppercase">{variant.hexCode}</span>
                       </div>
 
                       <div className="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-2">
@@ -869,7 +894,11 @@ const ProductManager: React.FC = () => {
                           value={variant.colorName}
                           onChange={(e) => {
                             const updated = [...colorVariants];
-                            updated[idx] = { ...updated[idx], colorName: e.target.value };
+                            updated[idx] = {
+                              ...updated[idx],
+                              colorName: e.target.value,
+                              hexCode: resolveColorToHex(e.target.value, updated[idx].hexCode),
+                            };
                             setColorVariants(updated);
                           }}
                           className="input"
@@ -968,6 +997,82 @@ const ProductManager: React.FC = () => {
                           }}
                         />
                       </label>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Fragrance Variants */}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <label className="block text-sm font-medium text-gray-700">
+                Fragrance Variants
+              </label>
+              <button
+                type="button"
+                onClick={() => setFragranceVariants((prev) => [...prev, { fragranceName: '', stock: 0, sku: '' }])}
+                className="text-xs px-3 py-1.5 border border-[#C9A66B] text-[#5A4232] rounded-lg hover:bg-[#F5E9DA]"
+              >
+                + Add Fragrance
+              </button>
+            </div>
+            <p className="text-xs text-gray-500 mb-3">
+              Add each fragrance available for this product. Customers can choose between these options.
+            </p>
+
+            {fragranceVariants.length === 0 ? (
+              <p className="text-sm text-gray-400 italic">No fragrance variants added.</p>
+            ) : (
+              <div className="space-y-3">
+                {fragranceVariants.map((variant, idx) => (
+                  <div key={idx} className="border border-gray-200 rounded-lg p-3">
+                    <div className="flex items-start gap-3">
+                      <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <input
+                          type="text"
+                          placeholder="Fragrance name (e.g. Lavender)"
+                          value={variant.fragranceName}
+                          onChange={(e) => {
+                            const updated = [...fragranceVariants];
+                            updated[idx] = { ...updated[idx], fragranceName: e.target.value };
+                            setFragranceVariants(updated);
+                          }}
+                          className="input"
+                        />
+                        <input
+                          type="number"
+                          placeholder="Stock"
+                          min="0"
+                          value={variant.stock}
+                          onChange={(e) => {
+                            const updated = [...fragranceVariants];
+                            updated[idx] = { ...updated[idx], stock: Number(e.target.value) };
+                            setFragranceVariants(updated);
+                          }}
+                          className="input"
+                        />
+                        <input
+                          type="text"
+                          placeholder="SKU (optional)"
+                          value={variant.sku}
+                          onChange={(e) => {
+                            const updated = [...fragranceVariants];
+                            updated[idx] = { ...updated[idx], sku: e.target.value };
+                            setFragranceVariants(updated);
+                          }}
+                          className="input"
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setFragranceVariants((prev) => prev.filter((_, i) => i !== idx))}
+                        className="text-red-500 hover:text-red-700 p-1"
+                        title="Remove this fragrance"
+                      >
+                        <Trash2 size={16} />
+                      </button>
                     </div>
                   </div>
                 ))}

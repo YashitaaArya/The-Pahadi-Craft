@@ -9,6 +9,12 @@ const colorVariantSchema = new mongoose.Schema({
   sku: { type: String, default: '' },
 }, { _id: false });
 
+const fragranceVariantSchema = new mongoose.Schema({
+  fragranceName: { type: String, required: true },
+  stock: { type: Number, default: 0 },
+  sku: { type: String, default: '' },
+}, { _id: false });
+
 const productSchema = new mongoose.Schema({
   name: { type: String, required: true },
   description: { type: String, default: '' },
@@ -34,6 +40,7 @@ const productSchema = new mongoose.Schema({
   Weight: { type: String, default: '' },   // free text, e.g. "500g"
 
   colorVariants: { type: [colorVariantSchema], default: [] },
+  fragranceVariants: { type: [fragranceVariantSchema], default: [] },
 
   fragranceNotes: { type: [String], default: [] },
   ingredients: { type: [String], default: [] },
