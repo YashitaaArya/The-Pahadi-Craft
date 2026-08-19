@@ -7,16 +7,19 @@ import { useProductStore } from '../store/productStore';
 import { useNavigate } from 'react-router-dom';
 import ProductImageCarousel from '../components/ProductImageCarousel';
 import { getProductImageUrls } from '../utils/productImages';
+import { Product, ProductColorVariant, ProductFragranceVariant } from '../types';
 
 const Shop = () => {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [showFilters, setShowFilters] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
+  const [selectedColorVariant, setSelectedColorVariant] = useState<ProductColorVariant | null>(null);
+  const [selectedFragranceVariant, setSelectedFragranceVariant] = useState<ProductFragranceVariant | null>(null);
   const { addItem } = useCartStore();
-  const { products, loading, fetchProducts } = useProductStore();
+  const { products, fetchProducts } = useProductStore();
   const navigate = useNavigate();
 
   // Fetch products on mount
@@ -31,8 +34,12 @@ const Shop = () => {
     return ['All', ...uniqueCategories];
   }, [products]);
 
-  const handleAddToCart = (product, qty = 1) => {
-    addItem({...product, quantity: qty});
+  const handleAddToCart = (product: Product, qty = 1) => {
+    addItem({
+      ...product,
+      selectedColorVariant: selectedColorVariant || undefined,
+      selectedFragranceVariant: selectedFragranceVariant || undefined,
+    }, qty);
   };
 
   const filteredProducts = products.filter((product) => {
@@ -45,7 +52,7 @@ const Shop = () => {
   });
 
   // Function to get additional images, handling both property names
-  const getAdditionalImages = (product) => {
+  const getAdditionalImages = (product: Product | null) => {
     if (product?.additionalImages) {
       return product.additionalImages;
     } 
@@ -55,7 +62,7 @@ const Shop = () => {
     return [];
   };
 
-  const nextImage = (e) => {
+  const nextImage = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
     const images = getAdditionalImages(selectedProduct);
     if (images.length === 0) return;
@@ -64,7 +71,7 @@ const Shop = () => {
     setCurrentImageIndex((prev) => (prev + 1) % totalImages);
   };
 
-  const prevImage = (e) => {
+  const prevImage = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
     const images = getAdditionalImages(selectedProduct);
     if (images.length === 0) return;
@@ -87,7 +94,7 @@ const Shop = () => {
   };
 
   // Determine if we should show navigation arrows
-  const shouldShowNavigation = (product) => {
+  const shouldShowNavigation = (product: Product) => {
     return getAdditionalImages(product).length > 0;
   };
 
@@ -95,6 +102,8 @@ const Shop = () => {
   React.useEffect(() => {
     setCurrentImageIndex(0);
     setQuantity(1);
+    setSelectedColorVariant(null);
+    setSelectedFragranceVariant(null);
   }, [selectedProduct]);
 
   return (
@@ -348,12 +357,24 @@ const Shop = () => {
                   <div className="space-y-2 mb-4 bg-[#F9F4EF] p-3 rounded-lg text-sm">
                     <div className="flex">
                       <span className="w-1/3 font-medium text-[#5A4232]">Category:</span>
-                      <span className="text-gray-800">{selectedProduct.category}</span>
+                      <span className="text-gray-800">{selectedProduct.mainCategory || selectedProduct.category}</span>
                     </div>
-                    {selectedProduct.fragranceNotes && (
+                    {selectedProduct.primeSubcategory && (
                       <div className="flex">
-                        <span className="w-1/3 font-medium text-[#5A4232]">Fragrance:</span>
-                        <span className="text-gray-800">{selectedProduct.fragranceNotes.join(', ')}</span>
+                        <span className="w-1/3 font-medium text-[#5A4232]">Collection:</span>
+                        <span className="text-gray-800">{selectedProduct.primeSubcategory}</span>
+                      </div>
+                    )}
+                    {selectedProduct.secondarySubcategory && (
+                      <div className="flex">
+                        <span className="w-1/3 font-medium text-[#5A4232]">Type:</span>
+                        <span className="text-gray-800">{selectedProduct.secondarySubcategory}</span>
+                      </div>
+                    )}
+                    {(selectedProduct.fragranceNotes ?? []).length > 0 && (
+                      <div className="flex">
+                        <span className="w-1/3 font-medium text-[#5A4232]">Notes:</span>
+                        <span className="text-gray-800">{(selectedProduct.fragranceNotes ?? []).join(', ')}</span>
                       </div>
                     )}
                     {selectedProduct.burnTime && (
@@ -370,6 +391,79 @@ const Shop = () => {
                       </span>
                     </div>
                   </div>
+
+                  <div className="grid grid-cols-2 gap-2 mb-4 text-xs">
+                    {selectedProduct.size && <div className="rounded-md bg-white border border-[#E6DFD7] p-2"><strong className="block text-[#5A4232]">Size</strong>{selectedProduct.size}</div>}
+                    {selectedProduct.material && <div className="rounded-md bg-white border border-[#E6DFD7] p-2"><strong className="block text-[#5A4232]">Material</strong>{selectedProduct.material}</div>}
+                    {selectedProduct.volume && <div className="rounded-md bg-white border border-[#E6DFD7] p-2"><strong className="block text-[#5A4232]">Capacity</strong>{selectedProduct.volume}</div>}
+                    {(selectedProduct.Weight || selectedProduct.weight) && <div className="rounded-md bg-white border border-[#E6DFD7] p-2"><strong className="block text-[#5A4232]">Weight</strong>{selectedProduct.Weight || selectedProduct.weight}</div>}
+                    <div className="rounded-md bg-white border border-[#E6DFD7] p-2"><strong className="block text-[#5A4232]">Items</strong>{selectedProduct.numberOfItems ?? 1} per pack</div>
+                    <div className="rounded-md bg-white border border-[#E6DFD7] p-2"><strong className="block text-[#5A4232]">Stock</strong>{selectedProduct.stock} available</div>
+                  </div>
+
+                  <div className="space-y-2 mb-4 text-xs text-gray-700">
+                    {(selectedProduct.ingredients ?? []).length > 0 && (
+                      <div><strong className="text-[#5A4232]">Ingredients:</strong> {(selectedProduct.ingredients ?? []).join(', ')}</div>
+                    )}
+                    {selectedProduct.artisanInfo && (
+                      <div><strong className="text-[#5A4232]">Artisan information:</strong> {selectedProduct.artisanInfo}</div>
+                    )}
+                    {(selectedProduct.tags ?? []).length > 0 && (
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        <strong className="text-[#5A4232]">Tags:</strong>
+                        {(selectedProduct.tags ?? []).map((tag) => <span key={tag} className="rounded-full bg-[#F5E9DA] px-2 py-0.5">{tag}</span>)}
+                      </div>
+                    )}
+                    <div className="flex flex-wrap gap-2">
+                      {selectedProduct.scented && <span className="rounded-full bg-purple-50 text-purple-700 px-2 py-0.5">Scented</span>}
+                      {selectedProduct.featured && <span className="rounded-full bg-yellow-100 text-yellow-800 px-2 py-0.5">Featured</span>}
+                      {selectedProduct.trending && <span className="rounded-full bg-blue-100 text-blue-800 px-2 py-0.5">Trending</span>}
+                      {selectedProduct.discount ? <span className="rounded-full bg-green-100 text-green-800 px-2 py-0.5">{selectedProduct.discount}% discount</span> : null}
+                    </div>
+                  </div>
+
+                  {(selectedProduct.colorVariants ?? []).length > 0 && (
+                    <div className="mb-4">
+                      <h3 className="font-medium text-[#5A4232] mb-2 text-xs uppercase tracking-wider">Choose Color</h3>
+                      <div className="flex flex-wrap gap-2">
+                        {(selectedProduct.colorVariants ?? []).map((variant) => (
+                          <button
+                            key={`${variant.colorName}-${variant.sku}`}
+                            type="button"
+                            disabled={variant.stock <= 0}
+                            onClick={() => setSelectedColorVariant(variant)}
+                            title={`${variant.colorName}${variant.stock <= 0 ? ' - Out of stock' : ''}`}
+                            className={`flex items-center gap-1.5 rounded-full border px-2 py-1 text-xs ${selectedColorVariant === variant ? 'border-[#5A4232] ring-2 ring-[#C9A66B]/40' : 'border-gray-200'} ${variant.stock <= 0 ? 'opacity-40 cursor-not-allowed' : ''}`}
+                          >
+                            <span className="w-4 h-4 rounded-full border border-gray-300" style={{ backgroundColor: variant.hexCode }} />
+                            {variant.colorName}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {((selectedProduct.fragranceVariants ?? []).length > 0 || (selectedProduct.fragranceNotes ?? []).length > 0) && (
+                    <div className="mb-4">
+                      <h3 className="font-medium text-[#5A4232] mb-2 text-xs uppercase tracking-wider">Choose Fragrance</h3>
+                      <div className="flex flex-wrap gap-2">
+                        {(selectedProduct.fragranceVariants ?? []).map((variant) => (
+                          <button
+                            key={`${variant.fragranceName}-${variant.sku}`}
+                            type="button"
+                            disabled={variant.stock <= 0}
+                            onClick={() => setSelectedFragranceVariant(variant)}
+                            className={`rounded-full border px-3 py-1 text-xs ${selectedFragranceVariant === variant ? 'border-[#5A4232] bg-[#F5E9DA]' : 'border-gray-200'} ${variant.stock <= 0 ? 'opacity-40 cursor-not-allowed' : ''}`}
+                          >
+                            {variant.fragranceName}
+                          </button>
+                        ))}
+                        {!(selectedProduct.fragranceVariants ?? []).length && (selectedProduct.fragranceNotes ?? []).map((note) => (
+                          <span key={note} className="rounded-full border border-gray-200 px-3 py-1 text-xs">{note}</span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
                   {/* Benefits section */}
                   <div className="flex justify-between mb-4 border-y border-gray-100 py-2.5">
