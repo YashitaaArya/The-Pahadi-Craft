@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useCartStore } from '../store/cartStore';
-import { getCartItemKey } from '../store/cartStore';
+import { getCartItemKey, useCartStore } from '../store/cartStore';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
@@ -283,7 +282,6 @@ const Checkout: React.FC = () => {
             <h2 className="font-serif text-lg mb-2">Order Summary</h2>
             <ul className="mb-2">
               {items.map((item) => (
-                <li key={getCartItemKey(item.product)} className="flex justify-between text-sm">
                 <li key={getCartItemKey(item.product)} className="flex justify-between text-sm">
                   <span>
                     {item.product.name} x {item.quantity}
