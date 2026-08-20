@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form';
 import { useAdminDashboardStore } from '../../store/adminDashboardStore';
 import { Product, ProductColorVariant, ProductFragranceVariant } from '../../types';
 import { getDriveImage } from '../../utils/driveImage';
-import { uploadProductImage, getProductCategories } from '../../api/adminApi';
+import { uploadProductImage, getProductCategories, bulkDeleteProducts } from '../../api/adminApi';
 import { compressImage } from '../../utils/compressImage';
 import BulkProductUpload from './BulkProductUpload';
 import {
@@ -82,6 +82,9 @@ const ProductManager: React.FC = () => {
   const [fragranceVariants, setFragranceVariants] = useState<ProductFragranceVariant[]>([]);
   const [uploadingVariantIndex, setUploadingVariantIndex] = useState<number | null>(null);
   const [bulkUploadOpen, setBulkUploadOpen] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkDeleteConfirmOpen, setBulkDeleteConfirmOpen] = useState(false);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
 
   useEffect(() => {
     getProductCategories()
@@ -225,6 +228,39 @@ const ProductManager: React.FC = () => {
     }
   };
 
+  const toggleSelected = (productId: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(productId)) next.delete(productId);
+      else next.add(productId);
+      return next;
+    });
+  };
+
+  const toggleSelectAllVisible = () => {
+    setSelectedIds((prev) => {
+      const allVisible = filteredProducts.map((p) => p.id);
+      const allSelected = allVisible.every((id) => prev.has(id));
+      if (allSelected) return new Set();
+      return new Set(allVisible);
+    });
+  };
+
+  const confirmBulkDelete = async () => {
+    setBulkDeleting(true);
+    try {
+      const { deletedCount } = await bulkDeleteProducts(Array.from(selectedIds));
+      showSuccess(`Deleted ${deletedCount} product${deletedCount !== 1 ? 's' : ''}`);
+      setSelectedIds(new Set());
+      setBulkDeleteConfirmOpen(false);
+      fetchProducts();
+    } catch (err: any) {
+      showError(err?.response?.data?.error || 'Failed to delete the selected products');
+    } finally {
+      setBulkDeleting(false);
+    }
+  };
+
   const onSubmit = async (data: ProductFormData) => {
     try {
       const parsedAdditionalImages = (data.additionalImagesText || '')
@@ -271,6 +307,15 @@ const ProductManager: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <h1 className="text-3xl font-serif text-[#5A4232]">Product Management</h1>
         <div className="flex gap-3 w-full sm:w-auto">
+          {selectedIds.size > 0 && (
+            <button
+              onClick={() => setBulkDeleteConfirmOpen(true)}
+              className="flex items-center justify-center gap-2 px-4 py-2 bg-red-50 text-red-600 border border-red-200 rounded-lg text-sm hover:bg-red-100 transition-colors"
+            >
+              <Trash2 className="w-4 h-4" />
+              Delete Selected ({selectedIds.size})
+            </button>
+          )}
           <button
             onClick={() => setBulkUploadOpen(true)}
             className="btn btn-secondary flex-1 sm:flex-none flex items-center justify-center gap-2"
@@ -347,15 +392,33 @@ const ProductManager: React.FC = () => {
         />
       ) : (
         <div className="space-y-3">
+          <label className="flex items-center gap-2 px-1 text-sm text-gray-500 cursor-pointer w-fit">
+            <input
+              type="checkbox"
+              checked={filteredProducts.length > 0 && filteredProducts.every((p) => selectedIds.has(p.id))}
+              onChange={toggleSelectAllVisible}
+              className="w-4 h-4 rounded border-gray-300 text-[#C9A66B]"
+            />
+            Select all {filteredProducts.length} shown
+          </label>
           {filteredProducts.map((product, index) => (
             <motion.div
               key={product.id}
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: index * 0.05 }}
-              className="bg-white rounded-lg p-4 hover:shadow-lg transition-shadow"
+              className={`bg-white rounded-lg p-4 hover:shadow-lg transition-shadow ${selectedIds.has(product.id) ? 'ring-2 ring-[#C9A66B]' : ''}`}
             >
               <div className="flex flex-col sm:flex-row gap-4">
+                {/* Select checkbox */}
+                <div className="flex-shrink-0 flex items-start pt-2">
+                  <input
+                    type="checkbox"
+                    checked={selectedIds.has(product.id)}
+                    onChange={() => toggleSelected(product.id)}
+                    className="w-4 h-4 rounded border-gray-300 text-[#C9A66B]"
+                  />
+                </div>
                 {/* Product Image */}
                 <div className="flex-shrink-0">
                   {product.image ? (
@@ -1101,6 +1164,18 @@ const ProductManager: React.FC = () => {
         isOpen={bulkUploadOpen}
         onClose={() => setBulkUploadOpen(false)}
         onImported={fetchProducts}
+      />
+
+      <ConfirmationDialog
+        isOpen={bulkDeleteConfirmOpen}
+        title="Delete Selected Products"
+        message={`Are you sure you want to delete ${selectedIds.size} product${selectedIds.size !== 1 ? 's' : ''}? This cannot be undone.`}
+        confirmText={bulkDeleting ? 'Deleting...' : 'Delete'}
+        cancelText="Cancel"
+        isDangerous
+        isLoading={bulkDeleting}
+        onConfirm={confirmBulkDelete}
+        onCancel={() => setBulkDeleteConfirmOpen(false)}
       />
     </div>
   );

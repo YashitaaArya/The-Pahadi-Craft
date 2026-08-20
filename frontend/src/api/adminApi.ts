@@ -247,3 +247,8 @@ export const uploadProductImage = async (file: File): Promise<string> => {
   });
   return response.data.url;
 };
+
+export const bulkDeleteProducts = async (ids: string[]): Promise<{ deletedCount: number }> => {
+  const response = await api.post('/products/bulk-delete', { ids });
+  return response.data;
+};
