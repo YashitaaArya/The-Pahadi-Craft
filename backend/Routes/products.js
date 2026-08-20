@@ -258,4 +258,22 @@ router.delete('/:id', adminAuth, requirePermission('products:write'), async (req
   }
 });
 
+// POST /api/products/bulk-delete - admin only. Body: { ids: string[] }
+router.post('/bulk-delete', adminAuth, requirePermission('products:write'), async (req, res) => {
+  const { ids } = req.body;
+  if (!Array.isArray(ids) || ids.length === 0) {
+    return res.status(400).json({ error: 'Provide an array of product ids to delete' });
+  }
+  if (ids.length > 1000) {
+    return res.status(400).json({ error: 'Too many at once - max 1000 per request' });
+  }
+  try {
+    const result = await Product.deleteMany({ _id: { $in: ids } });
+    res.json({ deletedCount: result.deletedCount });
+  } catch (err) {
+    console.error('Bulk delete error:', err);
+    res.status(500).json({ error: 'Failed to delete the selected products' });
+  }
+});
+
 module.exports = router;

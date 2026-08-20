@@ -20,15 +20,16 @@ const PremiumCandles: React.FC = () => {
 
   const premiumProducts = React.useMemo(() => {
     return products.filter((product) =>
+      product.primeSubcategory === 'Premium' ||
       product.subcategory === 'Premium' ||
       product.tags?.includes('premium') ||
-      (product.category === 'Candles' && (product.featured || product.trending))
+      ((product.mainCategory || product.category) === 'Candles' && (product.featured || product.trending))
     );
   }, [products]);
 
   const productsToShow = premiumProducts.length > 0
     ? premiumProducts
-    : products.filter((product) => product.category === 'Candles').slice(0, 8);
+    : products.filter((product) => (product.mainCategory || product.category) === 'Candles').slice(0, 8);
 
   // Slideshow images and content - updated with more reliable candle images
   const slideshowContent = [
@@ -64,7 +65,7 @@ const PremiumCandles: React.FC = () => {
 
   // Use premium candles from our dedicated data file
   const handleAddToCart = (product: Product, qty = 1) => {
-    addItem({...product, quantity: qty});
+    addItem(product, qty);
   };
 
   // Function to get additional images, handling both property names
@@ -435,11 +436,11 @@ const PremiumCandles: React.FC = () => {
                         </div>
                       )}
                       
-                      {selectedProduct.weight && (
+                      {(selectedProduct.Weight || selectedProduct.weight) && (
                         <div className="bg-amber-50 p-4 rounded-lg border border-amber-100">
                           <p className="text-sm">
                             <span className="font-medium text-amber-800 block mb-2">Weight</span>
-                            <span className="text-gray-600">{selectedProduct.weight}</span>
+                            <span className="text-gray-600">{selectedProduct.Weight || selectedProduct.weight}</span>
                           </p>
                         </div>
                       )}

@@ -1,16 +1,29 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Filter, X, ShoppingCart, ChevronLeft, ChevronRight, Star, Heart, Share2, Truck, Package, ShieldCheck } from 'lucide-react';
 import { useCartStore } from '../store/cartStore';
 import { getDriveImage } from '../utils/driveImage';
 import { useProductStore } from '../store/productStore';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import ProductImageCarousel from '../components/ProductImageCarousel';
 import { getProductImageUrls } from '../utils/productImages';
 import { Product, ProductColorVariant, ProductFragranceVariant } from '../types';
 
+// Fixed top-level categories - matches backend/config/categories.js exactly.
+const MAIN_CATEGORIES = [
+  'Candles',
+  'Bath Salts & Soaps',
+  'Resin Jewellery',
+  'Resin Artifacts',
+  'Concrete Artifacts',
+  'Terracotta / Clay',
+  'Occasion-Based',
+];
+
 const Shop = () => {
+  const [searchParams] = useSearchParams();
   const [selectedCategory, setSelectedCategory] = useState('All');
+  const [selectedSubFilter, setSelectedSubFilter] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -27,12 +40,16 @@ const Shop = () => {
     fetchProducts();
   }, [fetchProducts]);
 
-  const categories = useMemo(() => {
-    const uniqueCategories = Array.from(
-      new Set(products.map((product) => product.category).filter(Boolean))
-    );
-    return ['All', ...uniqueCategories];
-  }, [products]);
+  // Pre-select a category when arriving via a link like /shop?category=Candles
+  // (used by the homepage Collections cards).
+  useEffect(() => {
+    const categoryParam = searchParams.get('category');
+    if (categoryParam && MAIN_CATEGORIES.includes(categoryParam)) {
+      setSelectedCategory(categoryParam);
+    }
+  }, [searchParams]);
+
+  const categories = ['All', ...MAIN_CATEGORIES];
 
   const handleAddToCart = (product: Product, qty = 1) => {
     if ((product.colorVariants ?? []).length > 0 && !selectedColorVariant) {
@@ -51,12 +68,15 @@ const Shop = () => {
   };
 
   const filteredProducts = products.filter((product) => {
+    const productCategory = product.mainCategory || product.category;
     const matchesCategory =
-      selectedCategory === 'All' || product.category === selectedCategory;
+      selectedCategory === 'All' || productCategory === selectedCategory;
+    const matchesSubFilter =
+      !selectedSubFilter || product.primeSubcategory === selectedSubFilter;
     const matchesSearch =
       product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       product.description.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesCategory && matchesSearch;
+    return matchesCategory && matchesSubFilter && matchesSearch;
   });
 
   // Function to get additional images, handling both property names
@@ -133,7 +153,9 @@ const Shop = () => {
                 className="flex items-center gap-2 px-4 py-2 rounded-full bg-[#F5E9DA] text-[#5A4232] hover:bg-[#e8d9c5] transition"
               >
                 <Filter className="w-4 h-4" />
-                {selectedCategory === 'All' ? 'All Filters' : selectedCategory}
+                {selectedSubFilter
+                  ? `${selectedCategory}: ${selectedSubFilter}`
+                  : selectedCategory === 'All' ? 'All Filters' : selectedCategory}
               </button>
               {showFilters && (
                 <div className="absolute mt-3 z-10 w-[300px] sm:w-[500px] md:w-[700px] lg:w-[900px] p-4 rounded-xl backdrop-blur-md bg-[#5A4232]/30 shadow-xl">
@@ -144,6 +166,7 @@ const Shop = () => {
                         key={category}
                         onClick={() => {
                           setSelectedCategory(category);
+                          setSelectedSubFilter(null);
                           setShowFilters(false);
                         }}
                         className={`text-sm px-3 py-2 rounded-full transition ${
@@ -161,10 +184,17 @@ const Shop = () => {
             </div>
 
             <button
-              onClick={() => navigate('/special-occult-candles')}
-              className="px-4 py-2 bg-[#3E2A1F] text-white rounded-full hover:bg-[#5A4232] transition"
+              onClick={() => {
+                setSelectedCategory('Candles');
+                setSelectedSubFilter('Occult');
+              }}
+              className={`px-4 py-2 rounded-full transition ${
+                selectedSubFilter === 'Occult'
+                  ? 'bg-[#5A4232] text-white'
+                  : 'bg-[#3E2A1F] text-white hover:bg-[#5A4232]'
+              }`}
             >
-              Special Occult Candles
+              Occult Candles
             </button>
 
             <div className="relative w-full sm:w-1/2">
@@ -573,7 +603,3 @@ const Shop = () => {
 };
 
 export default Shop;
-
-
-
-
