@@ -196,12 +196,97 @@ router.get('/feedback', adminAuth, requirePermission('analytics:read'), async (r
   }
 });
 
+// GET /api/banners - public, get all active banners
 router.get('/banners', async (req, res) => {
+  try {
+    const banners = await Banner.find({ active: true }).sort({ position: 1 });
+    res.json(banners.map((b) => b.toJSON()));
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch banners' });
+  }
+});
+
+// GET /api/banners/admin - admin only, get all banners (including inactive)
+router.get('/banners/admin', adminAuth, requirePermission('content:write'), async (req, res) => {
   try {
     const banners = await Banner.find().sort({ position: 1 });
     res.json(banners.map((b) => b.toJSON()));
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch banners' });
+  }
+});
+
+// POST /api/banners - admin only, create banner
+router.post('/banners', adminAuth, requirePermission('content:write'), async (req, res) => {
+  try {
+    const { title, description, image, link, active, position } = req.body;
+    
+    if (!title || !image) {
+      return res.status(400).json({ error: 'Title and image are required' });
+    }
+
+    // Get the highest position if not provided
+    let finalPosition = position;
+    if (finalPosition === undefined) {
+      const lastBanner = await Banner.findOne().sort({ position: -1 });
+      finalPosition = (lastBanner?.position || 0) + 1;
+    }
+
+    const banner = new Banner({
+      title,
+      description: description || '',
+      image,
+      link: link || '',
+      active: active !== false,
+      position: finalPosition,
+    });
+
+    const saved = await banner.save();
+    res.status(201).json(saved.toJSON());
+  } catch (err) {
+    console.error('Error creating banner:', err);
+    res.status(500).json({ error: 'Failed to create banner' });
+  }
+});
+
+// PUT /api/banners/:id - admin only, update banner
+router.put('/banners/:id', adminAuth, requirePermission('content:write'), async (req, res) => {
+  try {
+    const { title, description, image, link, active, position } = req.body;
+    
+    const banner = await Banner.findById(req.params.id);
+    if (!banner) {
+      return res.status(404).json({ error: 'Banner not found' });
+    }
+
+    if (title !== undefined) banner.title = title;
+    if (description !== undefined) banner.description = description;
+    if (image !== undefined) banner.image = image;
+    if (link !== undefined) banner.link = link;
+    if (active !== undefined) banner.active = active;
+    if (position !== undefined) banner.position = position;
+
+    const updated = await banner.save();
+    res.json(updated.toJSON());
+  } catch (err) {
+    console.error('Error updating banner:', err);
+    res.status(500).json({ error: 'Failed to update banner' });
+  }
+});
+
+// DELETE /api/banners/:id - admin only, delete banner
+router.delete('/banners/:id', adminAuth, requirePermission('content:write'), async (req, res) => {
+  try {
+    const banner = await Banner.findById(req.params.id);
+    if (!banner) {
+      return res.status(404).json({ error: 'Banner not found' });
+    }
+
+    await Banner.findByIdAndDelete(req.params.id);
+    res.json({ message: 'Banner deleted successfully' });
+  } catch (err) {
+    console.error('Error deleting banner:', err);
+    res.status(500).json({ error: 'Failed to delete banner' });
   }
 });
 
