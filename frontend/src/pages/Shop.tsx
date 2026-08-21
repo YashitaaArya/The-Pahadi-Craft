@@ -169,7 +169,7 @@ const Shop = () => {
                           setSelectedSubFilter(null);
                           setShowFilters(false);
                         }}
-                        className={`text-sm px-3 py-2 rounded-full transition ${
+                        className={`text-sm font-semibold px-3 py-2 rounded-full transition ${
                           selectedCategory === category
                             ? 'bg-white text-[#5A4232]'
                             : 'bg-white/20 text-[#5A4232] hover:bg-white/30'
@@ -188,7 +188,7 @@ const Shop = () => {
                 setSelectedCategory('Candles');
                 setSelectedSubFilter('Occult');
               }}
-              className={`px-4 py-2 rounded-full transition ${
+              className={`px-4 py-2 rounded-full font-semibold transition ${
                 selectedSubFilter === 'Occult'
                   ? 'bg-[#5A4232] text-white'
                   : 'bg-[#3E2A1F] text-white hover:bg-[#5A4232]'

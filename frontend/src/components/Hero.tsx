@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Flame } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -42,7 +42,7 @@ const Hero = () => {
   const backgroundImage = slides.length > 0 ? slides[current].image : FALLBACK_IMAGE;
 
   return (
-    <div className="relative h-screen flex items-center justify-center overflow-hidden">
+    <div className="relative h-[75vh] flex items-center justify-center overflow-hidden">
       <AnimatePresence mode="sync">
         <motion.div
           key={backgroundImage}
@@ -134,7 +134,7 @@ const Hero = () => {
       </div>
 
       <motion.button
-        onClick={() => window.scrollTo({ top: window.innerHeight, behavior: 'smooth' })}
+        onClick={() => window.scrollTo({ top: window.innerHeight * 0.75, behavior: 'smooth' })}
         className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-2 text-white/90 hover:text-white transition-colors"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}

@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Mail, MapPin, Phone, Instagram, Clock } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Mail, MapPin, Phone, Instagram, Clock, Loader2, CheckCircle2 } from 'lucide-react';
+import axios from 'axios';
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -9,16 +11,26 @@ const Contact = () => {
     subject: '',
     message: '',
   });
+  const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
+  const [errorMsg, setErrorMsg] = useState('');
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const body = `Name: ${formData.name}\nEmail: ${formData.email}\nSubject: ${formData.subject}\n\nMessage:\n${formData.message}`;
-    window.location.href = `mailto:pahadicraft@gmail.com?subject=Contact Form: ${formData.subject}&body=${encodeURIComponent(body)}`;
+    setStatus('sending');
+    setErrorMsg('');
+    try {
+      await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/contact`, formData);
+      setStatus('sent');
+      setFormData({ name: '', email: '', subject: '', message: '' });
+    } catch (err: any) {
+      setStatus('error');
+      setErrorMsg(err?.response?.data?.error || 'Something went wrong, please try again.');
+    }
   };
 
   return (
@@ -53,6 +65,19 @@ const Contact = () => {
             <div className="lg:col-span-2">
               <div className="bg-white/80 backdrop-blur-sm rounded-xl p-8 shadow-lg border border-white/50">
                 <h2 className="text-2xl font-serif text-[#5A4232] mb-6">Send us a Message</h2>
+                {status === 'sent' ? (
+                  <div className="flex flex-col items-center text-center py-10">
+                    <CheckCircle2 className="w-12 h-12 text-green-600 mb-4" />
+                    <p className="text-[#5A4232] font-serif text-xl mb-2">Message sent!</p>
+                    <p className="text-[#7A6A5A]">We've received your message and will get back to you soon.</p>
+                    <button
+                      onClick={() => setStatus('idle')}
+                      className="mt-6 text-[#C9A66B] hover:text-[#5A4232] text-sm underline"
+                    >
+                      Send another message
+                    </button>
+                  </div>
+                ) : (
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
@@ -108,13 +133,20 @@ const Contact = () => {
                     />
                   </div>
 
+                  {status === 'error' && (
+                    <p className="text-red-600 text-sm text-center">{errorMsg}</p>
+                  )}
+
                   <button
                     type="submit"
-                    className="w-full bg-[#C9A66B] text-white py-4 rounded-lg hover:bg-[#5A4232] transition-colors shadow-md hover:shadow-lg font-medium text-lg"
+                    disabled={status === 'sending'}
+                    className="w-full bg-[#C9A66B] text-white py-4 rounded-lg hover:bg-[#5A4232] transition-colors shadow-md hover:shadow-lg font-medium text-lg disabled:opacity-60 flex items-center justify-center gap-2"
                   >
-                    Send Message
+                    {status === 'sending' && <Loader2 className="w-5 h-5 animate-spin" />}
+                    {status === 'sending' ? 'Sending...' : 'Send Message'}
                   </button>
                 </form>
+                )}
               </div>
             </div>
 
@@ -130,7 +162,7 @@ const Contact = () => {
                     </div>
                     <div>
                       <h3 className="font-serif text-[#C9A66B]">Phone</h3>
-                      <p className="text-white/90">+91 7660077316</p>
+                      <a href="tel:+917660077316" className="text-white/90 hover:text-[#C9A66B] transition-colors">+91 7660077316</a>
                     </div>
                   </div>
                   
@@ -140,7 +172,7 @@ const Contact = () => {
                     </div>
                     <div>
                       <h3 className="font-serif text-[#C9A66B]">Email</h3>
-                      <p className="text-white/90">pahadicraft@gmail.com</p>
+                      <a href="mailto:pahadicraft@gmail.com" className="text-white/90 hover:text-[#C9A66B] transition-colors">pahadicraft@gmail.com</a>
                     </div>
                   </div>
                   
@@ -150,7 +182,14 @@ const Contact = () => {
                     </div>
                     <div>
                       <h3 className="font-serif text-[#C9A66B]">Address</h3>
-                      <p className="text-white/90">Pahadi Craft, Gagret, Distt.Una, Himachal Pradesh-177201</p>
+                      <a
+                        href="https://www.google.com/maps/place/?q=place_id:ChIJAQAAADkfGzkRJBhBd1C3LOI"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-white/90 hover:text-[#C9A66B] transition-colors"
+                      >
+                        Pahadi Craft, Gagret, Distt.Una, Himachal Pradesh-177201
+                      </a>
                     </div>
                   </div>
                   
@@ -160,7 +199,14 @@ const Contact = () => {
                     </div>
                     <div>
                       <h3 className="font-serif text-[#C9A66B]">Instagram</h3>
-                      <p className="text-white/90">@pahadi.craft</p>
+                      <a
+                        href="https://www.instagram.com/pahadi_craft"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-white/90 hover:text-[#C9A66B] transition-colors"
+                      >
+                        @pahadi_craft
+                      </a>
                     </div>
                   </div>
 
@@ -182,23 +228,29 @@ const Contact = () => {
                   Follow us on social media for product updates, behind-the-scenes content, and more.
                 </p>
                 <div className="flex space-x-4">
-                  <a href="#" className="bg-[#5A4232] p-3 rounded-full text-white hover:bg-[#C9A66B] transition-colors">
+                  <a
+                    href="https://www.instagram.com/pahadi_craft"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="bg-[#5A4232] p-3 rounded-full text-white hover:bg-[#C9A66B] transition-colors"
+                  >
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
                       <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
                       <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
                     </svg>
                   </a>
-                  <a href="#" className="bg-[#5A4232] p-3 rounded-full text-white hover:bg-[#C9A66B] transition-colors">
+                  <a
+                    href="https://www.facebook.com/neetyarya/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="bg-[#5A4232] p-3 rounded-full text-white hover:bg-[#C9A66B] transition-colors"
+                  >
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
                     </svg>
                   </a>
-                  <a href="#" className="bg-[#5A4232] p-3 rounded-full text-white hover:bg-[#C9A66B] transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path>
-                    </svg>
-                  </a>
+                  {/* YouTube link goes here once the channel URL is confirmed */}
                   <a href="https://wa.me/917660077316" target="_blank" rel="noopener noreferrer" className="bg-[#5A4232] p-3 rounded-full text-white hover:bg-[#C9A66B] transition-colors">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
@@ -228,27 +280,18 @@ const Contact = () => {
             </div>
           </div>
 
-          {/* FAQ or Additional Information */}
-          <div className="bg-[#F5E9DA]/50 rounded-xl p-8 shadow-sm mb-12">
-            <h2 className="text-2xl font-serif text-[#5A4232] mb-6 text-center">Frequently Asked Questions</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <h3 className="font-serif text-[#5A4232] text-lg mb-2">How long does shipping take?</h3>
-                <p className="text-[#7A6A5A]">We typically process orders within 1-2 business days. Domestic shipping takes 3-7 business days, while international shipping can take 10-14 business days.</p>
-              </div>
-              <div>
-                <h3 className="font-serif text-[#5A4232] text-lg mb-2">Do you offer custom orders?</h3>
-                <p className="text-[#7A6A5A]">Yes! We love bringing custom ideas to life. Please reach out with your requirements and we'll be happy to discuss possibilities.</p>
-              </div>
-              <div>
-                <h3 className="font-serif text-[#5A4232] text-lg mb-2">What payment methods do you accept?</h3>
-                <p className="text-[#7A6A5A]">We accept credit/debit cards, UPI payments, and bank transfers. All transactions are secure and encrypted.</p>
-              </div>
-              <div>
-                <h3 className="font-serif text-[#5A4232] text-lg mb-2">How can I track my order?</h3>
-                <p className="text-[#7A6A5A]">Once your order ships, you'll receive a tracking number via email. You can also contact us directly for updates on your order.</p>
-              </div>
-            </div>
+          {/* FAQ */}
+          <div className="bg-[#F5E9DA]/50 rounded-xl p-8 shadow-sm mb-12 text-center">
+            <h2 className="text-2xl font-serif text-[#5A4232] mb-3">Have Questions?</h2>
+            <p className="text-[#7A6A5A] mb-6 max-w-xl mx-auto">
+              We've answered the most common questions about our products, orders, and shipping on one page.
+            </p>
+            <Link
+              to="/faq"
+              className="inline-block px-6 py-3 bg-[#C9A66B] text-white rounded-lg hover:bg-[#5A4232] transition-colors font-medium"
+            >
+              View All FAQs
+            </Link>
           </div>
 
           {/* Call to Action */}
