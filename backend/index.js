@@ -24,17 +24,26 @@ mongoose.connect(process.env.MONGO_URI)
 
 const app = express();
 
-const allowedOrigins = [
+const allowedOrigins = new Set([
   'https://thepahadicraft.com',
   'https://www.thepahadicraft.com',
   'http://localhost:5173',
-];
+]);
 if (process.env.EXTRA_CORS_ORIGIN) {
-  allowedOrigins.push(process.env.EXTRA_CORS_ORIGIN);
+  process.env.EXTRA_CORS_ORIGIN
+    .split(',')
+    .map((origin) => origin.trim().replace(/\/$/, ''))
+    .filter(Boolean)
+    .forEach((origin) => allowedOrigins.add(origin));
 }
 
 app.use(cors({
-  origin: allowedOrigins,
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.has(origin.replace(/\/$/, ''))) {
+      return callback(null, true);
+    }
+    return callback(new Error(`CORS origin not allowed: ${origin}`));
+  },
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
   credentials: true
 }));
