@@ -12,17 +12,35 @@ const emailConfigured = !!(process.env.EMAIL_USER && process.env.EMAIL_APP_PASSW
 
 if (emailConfigured) {
   transporter = nodemailer.createTransport({
-    service: 'gmail',
-    // connectionTimeout: 10000,
-    // greetingTimeout: 10000,
-    // socketTimeout: 15000,
+    host: 'smtp.gmail.com',
+    port: 587,
+    secure: false,
+    connectionTimeout: 10000,
+    greetingTimeout: 10000,
+    socketTimeout: 15000,
     auth: {
       user: process.env.EMAIL_USER,
       pass: process.env.EMAIL_APP_PASSWORD.replace(/\s/g, ''),
     },
   });
 } else {
-  console.warn('⚠️  EMAIL_USER / EMAIL_APP_PASSWORD are not set - contact form messages will still save to the database and show in the admin dashboard, but the email notification will be skipped.');
+  console.warn('EMAIL settings are not configured - contact form messages will still save to the database, but email notification will be unavailable.');
+}
+
+async function sendContactEmail({ name, email, subject, message }) {
+  const recipient = process.env.EMAIL_USER;
+
+  if (!transporter) {
+    throw new Error('No email provider is configured');
+  }
+
+  await transporter.sendMail({
+    from: `"Pahadi Craft Website" <${process.env.EMAIL_USER}>`,
+    to: recipient,
+    replyTo: email || undefined,
+    subject: `New contact form message${subject ? `: ${subject}` : ''}`,
+    text: `A customer contacted you through the website.\n\nName: ${name}\nEmail: ${email || 'not provided'}\n\nMessage:\n${message}\n\nReply directly to this email to respond to them.`,
+  });
 }
 
 // POST /api/contact - public. Saves the message (always, so nothing is lost
@@ -47,23 +65,15 @@ router.post('/', async (req, res) => {
       });
     }
 
-    if (transporter) {
-      try {
-        await transporter.sendMail({
-          from: `"Pahadi Craft Website" <${process.env.EMAIL_USER}>`,
-          to: process.env.EMAIL_USER,
-          replyTo: email || undefined,
-          subject: `New contact form message${subject ? `: ${subject}` : ''}`,
-          text: `A customer contacted you through the website.\n\nName: ${name}\nEmail: ${email || 'not provided'}\n\nMessage:\n${message}\n\nReply directly to this email to respond to them.`,
-        });
-      } catch (emailErr) {
-        console.error('Contact email send failed:', emailErr);
-        return res.status(502).json({
-          error: 'Your message was saved, but the email notification could not be delivered. Please try again later.',
-          saved: true,
-          id: saved.id,
-        });
-      }
+    try {
+      await sendContactEmail({ name, email, subject, message });
+    } catch (emailErr) {
+      console.error('Contact email send failed:', emailErr);
+      return res.status(502).json({
+        error: 'Your message was saved, but the email notification could not be delivered. Please try again later.',
+        saved: true,
+        id: saved.id,
+      });
     }
 
     res.status(201).json({ success: true, id: saved.id });
