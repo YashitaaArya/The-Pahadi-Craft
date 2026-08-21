@@ -4,6 +4,9 @@ import { Link } from 'react-router-dom';
 import { Mail, MapPin, Phone, Instagram, Clock, Loader2, CheckCircle2 } from 'lucide-react';
 import axios from 'axios';
 
+const backendUrl = (import.meta.env.VITE_BACKEND_URL ||
+  import.meta.env.VITE_API_BASE_URL?.replace(/\/api\/?$/, ''))?.replace(/\/+$/, '');
+
 const Contact = () => {
   const [formData, setFormData] = useState({
     name: '',
@@ -24,12 +27,15 @@ const Contact = () => {
     setStatus('sending');
     setErrorMsg('');
     try {
-      await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/contact`, formData);
+      if (!backendUrl) {
+        throw new Error('Contact form API is not configured.');
+      }
+      await axios.post(`${backendUrl}/api/contact`, formData);
       setStatus('sent');
       setFormData({ name: '', email: '', subject: '', message: '' });
     } catch (err: any) {
       setStatus('error');
-      setErrorMsg(err?.response?.data?.error || 'Something went wrong, please try again.');
+      setErrorMsg(err?.response?.data?.error || err?.message || 'Something went wrong, please try again.');
     }
   };
 
