@@ -13,9 +13,9 @@ const emailConfigured = !!(process.env.EMAIL_USER && process.env.EMAIL_APP_PASSW
 if (emailConfigured) {
   transporter = nodemailer.createTransport({
     service: 'gmail',
-    connectionTimeout: 10000,
-    greetingTimeout: 10000,
-    socketTimeout: 15000,
+    // connectionTimeout: 10000,
+    // greetingTimeout: 10000,
+    // socketTimeout: 15000,
     auth: {
       user: process.env.EMAIL_USER,
       pass: process.env.EMAIL_APP_PASSWORD.replace(/\s/g, ''),
