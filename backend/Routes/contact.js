@@ -13,9 +13,12 @@ const emailConfigured = !!(process.env.EMAIL_USER && process.env.EMAIL_APP_PASSW
 if (emailConfigured) {
   transporter = nodemailer.createTransport({
     service: 'gmail',
+    connectionTimeout: 10000,
+    greetingTimeout: 10000,
+    socketTimeout: 15000,
     auth: {
       user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_APP_PASSWORD,
+      pass: process.env.EMAIL_APP_PASSWORD.replace(/\s/g, ''),
     },
   });
 } else {
@@ -36,6 +39,14 @@ router.post('/', async (req, res) => {
 
     const saved = await ContactMessage.create({ name, email, subject, message });
 
+    if (!transporter) {
+      return res.status(503).json({
+        error: 'Your message was saved, but email notifications are not configured on the server.',
+        saved: true,
+        id: saved.id,
+      });
+    }
+
     if (transporter) {
       try {
         await transporter.sendMail({
@@ -46,9 +57,12 @@ router.post('/', async (req, res) => {
           text: `A customer contacted you through the website.\n\nName: ${name}\nEmail: ${email || 'not provided'}\n\nMessage:\n${message}\n\nReply directly to this email to respond to them.`,
         });
       } catch (emailErr) {
-        // The message is already saved and visible in the admin dashboard,
-        // so a failed email isn't a failed request - just log it.
         console.error('Contact email send failed:', emailErr);
+        return res.status(502).json({
+          error: 'Your message was saved, but the email notification could not be delivered. Please try again later.',
+          saved: true,
+          id: saved.id,
+        });
       }
     }
 
