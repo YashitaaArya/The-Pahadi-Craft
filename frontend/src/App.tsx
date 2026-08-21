@@ -29,7 +29,6 @@ import Checkout from './components/Checkout';
 import UserProfile from './pages/UserProfile';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsConditions from './pages/TermsConditions';
-import SpecialOccultCandles from './pages/SpecialOccultCandles';
 import PremiumCandles from './pages/PremiumCandles';
 
 // Admin Components
@@ -332,18 +331,6 @@ function AppRoutes() {
             <Cart />
             <ContactSlider />
             <Checkout />
-            <Footer />
-          </div>
-        }
-      />
-      <Route
-        path="/special-occult-candles"
-        element={
-          <div className="min-h-screen bg-[#FFF8F2]">
-            <Navbar />
-            <Cart />
-            <ContactSlider />
-            <SpecialOccultCandles />
             <Footer />
           </div>
         }

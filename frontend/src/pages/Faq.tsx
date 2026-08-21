@@ -90,7 +90,7 @@ const Faq: React.FC = () => {
             <button
               key={cat}
               onClick={() => { setActiveCategory(cat); setOpenIndex(null); }}
-              className={`px-4 py-1.5 rounded-full text-sm transition-colors ${
+              className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-colors ${
                 activeCategory === cat
                   ? 'bg-[#5A4232] text-white'
                   : 'bg-white text-[#5A4232] border border-[#E6DFD7] hover:bg-[#F5E9DA]'
