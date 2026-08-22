@@ -390,7 +390,7 @@ const HomePage = () => {
   }, []);
 
   return (
-    <main>
+    <main className="pt-20">
       <Hero />
       <FeaturedProducts />
       <Collections />
