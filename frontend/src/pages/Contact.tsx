@@ -294,6 +294,7 @@ const Contact = () => {
             </p>
             <Link
               to="/faq"
+              onClick={() => window.scrollTo({ top: 0, left: 0, behavior: 'auto' })}
               className="inline-block px-6 py-3 bg-[#C9A66B] text-white rounded-lg hover:bg-[#5A4232] transition-colors font-medium"
             >
               View All FAQs
