@@ -172,7 +172,7 @@ const Shop = () => {
                         className={`text-sm font-semibold px-3 py-2 rounded-full transition ${
                           selectedCategory === category
                             ? 'bg-white text-[#5A4232]'
-                            : 'bg-white/20 text-[#5A4232] hover:bg-white/30'
+                            : 'bg-[#3E2A1F] text-white hover:bg-[#5A4232]'
                         }`}
                       >
                         {category}

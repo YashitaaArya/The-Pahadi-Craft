@@ -16,6 +16,7 @@ const upload = require('./Routes/upload');
 const newsletter = require('./Routes/newsletter');
 const collections = require('./Routes/collections');
 const contact = require('./Routes/contact');
+const press = require('./Routes/press');
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGO_URI)
@@ -66,6 +67,7 @@ app.use('/api/upload', upload);
 app.use('/api/newsletter', newsletter);
 app.use('/api/collections', collections);
 app.use('/api/contact', contact);
+app.use('/api/press', press);
 app.use('/api', adminData); // /api/analytics, /api/users, /api/reviews, /api/testimonials, /api/feedback, /api/banners
 
 app.get('/', (req, res) => {

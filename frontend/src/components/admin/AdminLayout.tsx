@@ -16,6 +16,8 @@ import {
   ChevronDown,
   Home,
   Image as ImageIcon,
+  MessageCircle,
+  Newspaper,
 } from 'lucide-react';
 import { useAdminAuthStore } from '../../store/adminAuthStore';
 import { showSuccess } from './common';
@@ -72,6 +74,18 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       label: 'Collections',
       icon: Package,
       path: '/admin/collections',
+      permission: 'content:write',
+    },
+    {
+      label: 'Messages',
+      icon: MessageCircle,
+      path: '/admin/messages',
+      permission: 'customers:read',
+    },
+    {
+      label: 'Press & Recognition',
+      icon: Newspaper,
+      path: '/admin/press',
       permission: 'content:write',
     },
     {
