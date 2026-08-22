@@ -42,7 +42,7 @@ const Hero = () => {
   const backgroundImage = slides.length > 0 ? slides[current].image : FALLBACK_IMAGE;
 
   return (
-    <div className="relative h-[75vh] flex items-center justify-center overflow-hidden">
+    <div className="relative h-[80vh] flex items-center justify-center overflow-hidden">
       <AnimatePresence mode="sync">
         <motion.div
           key={backgroundImage}
