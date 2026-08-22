@@ -13,6 +13,7 @@ interface PressMention {
   id: string;
   title: string;
   source: string;
+  description: string;
   image: string;
   link: string;
   date: string;
@@ -20,7 +21,7 @@ interface PressMention {
   active: boolean;
 }
 
-const emptyForm = { title: '', source: '', image: '', link: '', date: '', active: true, position: 0 };
+const emptyForm = { title: '', source: '', description: '', image: '', link: '', date: '', active: true, position: 0 };
 
 const PressManager: React.FC = () => {
   const [mentions, setMentions] = useState<PressMention[]>([]);
@@ -56,7 +57,7 @@ const PressManager: React.FC = () => {
 
   const openEdit = (m: PressMention) => {
     setEditing(m);
-    setForm({ title: m.title, source: m.source, image: m.image, link: m.link, date: m.date, active: m.active, position: m.position });
+    setForm({ title: m.title, source: m.source, description: m.description, image: m.image, link: m.link, date: m.date, active: m.active, position: m.position });
     setModalOpen(true);
   };
 
@@ -166,6 +167,16 @@ const PressManager: React.FC = () => {
               <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
               <input className="input" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} placeholder="March 2023" />
             </div>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+            <textarea
+              className="input resize-none"
+              rows={3}
+              value={form.description}
+              onChange={(e) => setForm({ ...form, description: e.target.value })}
+              placeholder="Explain what this is about, in your own words..."
+            />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Scan / Photo</label>
