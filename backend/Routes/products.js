@@ -5,7 +5,7 @@ const XLSX = require('xlsx');
 const Product = require('../models/Product');
 const adminAuth = require('../middleware/adminAuth');
 const requirePermission = require('../middleware/requirePermission');
-const { MAIN_CATEGORIES } = require('../config/categories');
+const { MAIN_CATEGORIES, SUGGESTED_SUBCATEGORIES } = require('../config/categories');
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -13,17 +13,38 @@ const upload = multer({
 });
 
 // GET /api/products/categories - public. The fixed main category list, plus
-// prime/secondary subcategory values already in use, so the admin form can
-// suggest them instead of everyone typing free text from scratch.
+// prime subcategory suggestions grouped per main category - seeded from the
+// owner's real taxonomy and merged with whatever's actually in use on real
+// products, so the admin form and the shop's filter tabs always have real
+// options to show, not an empty box waiting for products to exist first.
 router.get('/categories', async (req, res) => {
   try {
-    const [primeSubcategories, secondarySubcategories] = await Promise.all([
-      Product.distinct('primeSubcategory'),
-      Product.distinct('secondarySubcategory'),
-    ]);
+    const productsWithSubcats = await Product.find({ primeSubcategory: { $ne: '' } })
+      .select('mainCategory primeSubcategory')
+      .lean();
+
+    const byCategory = {};
+    MAIN_CATEGORIES.forEach((cat) => {
+      byCategory[cat] = new Set(SUGGESTED_SUBCATEGORIES[cat] || []);
+    });
+    productsWithSubcats.forEach((p) => {
+      if (byCategory[p.mainCategory]) {
+        byCategory[p.mainCategory].add(p.primeSubcategory);
+      }
+    });
+
+    const subcategoriesByCategory = {};
+    Object.keys(byCategory).forEach((cat) => {
+      subcategoriesByCategory[cat] = Array.from(byCategory[cat]).sort();
+    });
+
+    const secondarySubcategories = await Product.distinct('secondarySubcategory');
+
     res.json({
       mainCategories: MAIN_CATEGORIES,
-      primeSubcategories: primeSubcategories.filter(Boolean).sort(),
+      subcategoriesByCategory,
+      // Kept flat too, for anything still using the old shape
+      primeSubcategories: Array.from(new Set(Object.values(subcategoriesByCategory).flat())).sort(),
       secondarySubcategories: secondarySubcategories.filter(Boolean).sort(),
     });
   } catch (err) {

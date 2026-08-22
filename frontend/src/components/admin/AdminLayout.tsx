@@ -89,6 +89,12 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       permission: 'content:write',
     },
     {
+      label: 'About Page',
+      icon: FileText,
+      path: '/admin/about-page',
+      permission: 'content:write',
+    },
+    {
       label: 'Analytics',
       icon: BarChart3,
       path: '/admin/analytics',

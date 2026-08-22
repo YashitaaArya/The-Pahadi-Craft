@@ -23,12 +23,14 @@ import {
 // real catalog has far more variety than any hardcoded list could keep up with.
 const MAIN_CATEGORIES = [
   'Candles',
-  'Bath Salts & Soaps',
-  'Resin Jewellery',
-  'Resin Artifacts',
-  'Concrete Artifacts',
-  'Terracotta / Clay',
-  'Occasion-Based',
+  'Resin, Concrete, Wax & Wooden Artifacts',
+  'Cleansing, Healing & Wellness',
+  'Spell & Occult Products',
+  'Room Fragrances',
+  'Seven Chakra Range',
+  'Gifting & Gift Hampers',
+  'Festival Hampers',
+  'Manufacturing & Branding',
 ];
 
 const resolveColorToHex = (value: string, fallback: string) => {

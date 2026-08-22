@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Filter, X, ShoppingCart, ChevronLeft, ChevronRight, Star, Heart, Share2, Truck, Package, ShieldCheck } from 'lucide-react';
+import { Search, X, ShoppingCart, ChevronLeft, ChevronRight, Star, Heart, Share2, Truck, Package, ShieldCheck } from 'lucide-react';
 import { useCartStore } from '../store/cartStore';
 import { getDriveImage } from '../utils/driveImage';
 import { useProductStore } from '../store/productStore';
@@ -12,12 +13,14 @@ import { Product, ProductColorVariant, ProductFragranceVariant } from '../types'
 // Fixed top-level categories - matches backend/config/categories.js exactly.
 const MAIN_CATEGORIES = [
   'Candles',
-  'Bath Salts & Soaps',
-  'Resin Jewellery',
-  'Resin Artifacts',
-  'Concrete Artifacts',
-  'Terracotta / Clay',
-  'Occasion-Based',
+  'Resin, Concrete, Wax & Wooden Artifacts',
+  'Cleansing, Healing & Wellness',
+  'Spell & Occult Products',
+  'Room Fragrances',
+  'Seven Chakra Range',
+  'Gifting & Gift Hampers',
+  'Festival Hampers',
+  'Manufacturing & Branding',
 ];
 
 const Shop = () => {
@@ -25,7 +28,6 @@ const Shop = () => {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedSubFilter, setSelectedSubFilter] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [showFilters, setShowFilters] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
@@ -34,11 +36,21 @@ const Shop = () => {
   const { addItem } = useCartStore();
   const { products, fetchProducts } = useProductStore();
   const navigate = useNavigate();
+  const [subcategoriesByCategory, setSubcategoriesByCategory] = useState<Record<string, string[]>>({});
 
   // Fetch products on mount
   useEffect(() => {
     fetchProducts();
   }, [fetchProducts]);
+
+  // Fetch subcategory suggestions grouped per main category, for the
+  // Flipkart-style tab-then-subcategory-chips filter UI below.
+  useEffect(() => {
+    axios
+      .get(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'}/products/categories`)
+      .then((res) => setSubcategoriesByCategory(res.data.subcategoriesByCategory || {}))
+      .catch(() => setSubcategoriesByCategory({}));
+  }, []);
 
   // Pre-select a category when arriving via a link like /shop?category=Candles
   // (used by the homepage Collections cards).
@@ -47,9 +59,11 @@ const Shop = () => {
     if (categoryParam && MAIN_CATEGORIES.includes(categoryParam)) {
       setSelectedCategory(categoryParam);
     }
+    const searchParam = searchParams.get('q');
+    if (searchParam) {
+      setSearchQuery(searchParam);
+    }
   }, [searchParams]);
-
-  const categories = ['All', ...MAIN_CATEGORIES];
 
   const handleAddToCart = (product: Product, qty = 1) => {
     if ((product.colorVariants ?? []).length > 0 && !selectedColorVariant) {
@@ -146,57 +160,77 @@ const Shop = () => {
             Our Collection
           </h1>
 
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
-            <div className="relative">
+          {/* Category tab bar - click a main category to reveal its subcategories below */}
+          <div className="mb-4 -mx-4 px-4 sm:mx-0 sm:px-0 overflow-x-auto">
+            <div className="flex gap-2 pb-2 min-w-max sm:min-w-0 sm:flex-wrap">
               <button
-                onClick={() => setShowFilters(!showFilters)}
-                className="flex items-center gap-2 px-4 py-2 rounded-full bg-[#F5E9DA] text-[#5A4232] hover:bg-[#e8d9c5] transition"
+                onClick={() => { setSelectedCategory('All'); setSelectedSubFilter(null); }}
+                className={`text-sm font-semibold px-4 py-2 rounded-full transition whitespace-nowrap ${
+                  selectedCategory === 'All'
+                    ? 'bg-white text-[#5A4232] border-2 border-[#5A4232]'
+                    : 'bg-[#3E2A1F] text-white hover:bg-[#5A4232]'
+                }`}
               >
-                <Filter className="w-4 h-4" />
-                {selectedSubFilter
-                  ? `${selectedCategory}: ${selectedSubFilter}`
-                  : selectedCategory === 'All' ? 'All Filters' : selectedCategory}
+                All
               </button>
-              {showFilters && (
-                <div className="absolute mt-3 z-10 w-[300px] sm:w-[500px] md:w-[700px] lg:w-[900px] p-4 rounded-xl backdrop-blur-md bg-[#5A4232]/30 shadow-xl">
-                  <h2 className="text-lg font-serif text-white mb-4">Select a Category</h2>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2 max-h-[300px] overflow-y-auto">
-                    {categories.map((category) => (
-                      <button
-                        key={category}
-                        onClick={() => {
-                          setSelectedCategory(category);
-                          setSelectedSubFilter(null);
-                          setShowFilters(false);
-                        }}
-                        className={`text-sm font-semibold px-3 py-2 rounded-full transition ${
-                          selectedCategory === category
-                            ? 'bg-white text-[#5A4232]'
-                            : 'bg-[#3E2A1F] text-white hover:bg-[#5A4232]'
-                        }`}
-                      >
-                        {category}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
+              {MAIN_CATEGORIES.map((category) => (
+                <button
+                  key={category}
+                  onClick={() => {
+                    setSelectedCategory(category);
+                    setSelectedSubFilter(null);
+                  }}
+                  className={`text-sm font-semibold px-4 py-2 rounded-full transition whitespace-nowrap ${
+                    selectedCategory === category
+                      ? 'bg-white text-[#5A4232] border-2 border-[#5A4232]'
+                      : 'bg-[#3E2A1F] text-white hover:bg-[#5A4232]'
+                  }`}
+                >
+                  {category}
+                </button>
+              ))}
             </div>
+          </div>
 
-            <button
-              onClick={() => {
-                setSelectedCategory('Candles');
-                setSelectedSubFilter('Occult');
-              }}
-              className={`px-4 py-2 rounded-full font-semibold transition ${
-                selectedSubFilter === 'Occult'
-                  ? 'bg-[#5A4232] text-white'
-                  : 'bg-[#3E2A1F] text-white hover:bg-[#5A4232]'
-              }`}
-            >
-              Occult Candles
-            </button>
+          {/* Subcategory chips for the active main category - Flipkart-style */}
+          <AnimatePresence>
+            {selectedCategory !== 'All' && (subcategoriesByCategory[selectedCategory]?.length ?? 0) > 0 && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="mb-6 -mx-4 px-4 sm:mx-0 sm:px-0 overflow-hidden"
+              >
+                <div className="flex gap-2 pb-2 overflow-x-auto">
+                  <button
+                    onClick={() => setSelectedSubFilter(null)}
+                    className={`text-xs font-medium px-3 py-1.5 rounded-full transition whitespace-nowrap border ${
+                      !selectedSubFilter
+                        ? 'bg-[#C9A66B] text-white border-[#C9A66B]'
+                        : 'bg-white text-[#5A4232] border-[#E6DFD7] hover:border-[#C9A66B]'
+                    }`}
+                  >
+                    All {selectedCategory}
+                  </button>
+                  {subcategoriesByCategory[selectedCategory].map((sub) => (
+                    <button
+                      key={sub}
+                      onClick={() => setSelectedSubFilter(sub)}
+                      className={`text-xs font-medium px-3 py-1.5 rounded-full transition whitespace-nowrap border ${
+                        selectedSubFilter === sub
+                          ? 'bg-[#C9A66B] text-white border-[#C9A66B]'
+                          : 'bg-white text-[#5A4232] border-[#E6DFD7] hover:border-[#C9A66B]'
+                      }`}
+                    >
+                      {sub}
+                    </button>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
+          <div className="flex justify-end mb-8">
             <div className="relative w-full sm:w-1/2">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <input

@@ -6,6 +6,7 @@ const mongoose = require('mongoose');
 const pressMentionSchema = new mongoose.Schema({
   title: { type: String, required: true },      // e.g. "Featured in Tribune India"
   source: { type: String, default: '' },          // e.g. "The Tribune", "Himachal Awards 2023"
+  description: { type: String, default: '' },     // what it's about, in the owner's own words
   image: { type: String, default: '' },           // scan/photo of the clipping or award
   link: { type: String, default: '' },             // optional link to the original article
   date: { type: String, default: '' },              // free text, e.g. "March 2023"
