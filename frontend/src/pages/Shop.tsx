@@ -260,7 +260,7 @@ const Shop = () => {
                 />
                 <div className="p-4">
                   <h3 className="text-xl font-serif text-[#5A4232] font-semibold mb-1">{product.name}</h3>
-                  <p className="text-sm text-[#6B5849] mb-2">{product.description}</p>
+                  <p className="text-sm text-[#6B5849] mb-2 truncate">{product.description}</p>
                   <div className="flex justify-between items-center">
                     <span className="text-base font-semibold text-[#C9A66B]">₹{product.price}</span>
                     <button
@@ -290,7 +290,7 @@ const Shop = () => {
             onClick={() => setSelectedProduct(null)}
           >
             <motion.div
-              className="bg-gradient-to-br from-white to-[#F9F4EF] rounded-2xl w-full max-w-4xl relative shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)] overflow-hidden border border-[#E6DFD7]"
+              className="bg-gradient-to-br from-white to-[#F9F4EF] rounded-2xl w-full max-w-4xl max-h-[90vh] relative shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)] overflow-y-auto overflow-x-hidden border border-[#E6DFD7]"
               initial={{ scale: 0.9, opacity: 0, y: 30 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 10 }}
@@ -316,7 +316,7 @@ const Shop = () => {
                       key={currentImageIndex}
                       src={getDriveImage(getCurrentImage())}
                       alt={selectedProduct.name}
-                      className="w-full h-full object-contain p-4"
+                      className="w-full h-full object-cover"
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
