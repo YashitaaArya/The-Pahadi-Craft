@@ -1,9 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { motion, useAnimation } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
+import axios from 'axios';
+import { useAuthStore } from '../store/authStore';
+import Testimonials from '../components/Testimonials';
 
 const CustomOrder = () => {
   const navigate = useNavigate();
+  const { user } = useAuthStore();
   const [formData, setFormData] = useState({
     fragrance: '',
     size: '8oz',
@@ -12,18 +16,29 @@ const CustomOrder = () => {
     quantity: 1,
     specialInstructions: '',
   });
+  const [status, setStatus] = useState('idle'); // idle | sending | sent | error
+  const [errorMsg, setErrorMsg] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const body = `
-      Fragrance: ${formData.fragrance}
-      Size: ${formData.size}
-      Container: ${formData.container}
-      Custom Label Text: ${formData.label}
-      Quantity: ${formData.quantity}
-      Special Instructions: ${formData.specialInstructions}
-    `;
-    window.location.href = `mailto:pahadicraft@gmail.com?subject=Custom Candle Order&body=${encodeURIComponent(body)}`;
+    if (!user) {
+      navigate('/auth');
+      return;
+    }
+    setStatus('sending');
+    setErrorMsg('');
+    try {
+      await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/custom-order`, {
+        uid: user.uid,
+        customerName: user.displayName || user.email,
+        customerEmail: user.email,
+        ...formData,
+      });
+      setStatus('sent');
+    } catch (err: any) {
+      setStatus('error');
+      setErrorMsg(err?.response?.data?.error || 'Something went wrong, please try again.');
+    }
   };
 
   const handleChange = (e) => {
@@ -198,14 +213,38 @@ const CustomOrder = () => {
                     />
                   </div>
 
-                  <motion.button
-                    type="submit"
-                    className="w-full bg-gradient-to-r from-[#C9A66B] to-[#D4B683] text-white py-4 rounded-lg hover:from-[#5A4232] hover:to-[#785A46] transition-all duration-300 font-medium text-lg shadow-md"
-                    whileHover={{ scale: 1.02 }} 
-                    whileTap={{ scale: 0.98 }}
-                  >
-                    Submit Custom Order
-                  </motion.button>
+                  {status === 'sent' ? (
+                    <div className="text-center py-6">
+                      <p className="text-[#5A4232] font-serif text-xl mb-2">Request sent!</p>
+                      <p className="text-gray-600">
+                        We've received your custom order details and will reach out with a quote soon.
+                      </p>
+                    </div>
+                  ) : (
+                    <>
+                      {!user && (
+                        <p className="text-sm text-[#5A4232] bg-[#F5E9DA] rounded-lg px-4 py-3">
+                          You'll need to <Link to="/auth" className="underline font-medium">sign in</Link> to submit
+                          a custom order request - this keeps your request tied to your account so we can follow up.
+                        </p>
+                      )}
+                      {status === 'error' && (
+                        <p className="text-sm text-red-600 text-center">{errorMsg}</p>
+                      )}
+                      <motion.button
+                        type="submit"
+                        disabled={status === 'sending'}
+                        className="w-full bg-gradient-to-r from-[#C9A66B] to-[#D4B683] text-white py-4 rounded-lg hover:from-[#5A4232] hover:to-[#785A46] transition-all duration-300 font-medium text-lg shadow-md disabled:opacity-60"
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                      >
+                        {status === 'sending' ? 'Submitting...' : !user ? 'Sign In to Submit' : 'Submit Custom Order Request'}
+                      </motion.button>
+                      <p className="text-xs text-gray-500 text-center">
+                        This is a quote request, not a payment - we'll follow up with pricing before anything is charged.
+                      </p>
+                    </>
+                  )}
                 </form>
               </motion.div>
             </div>
@@ -302,55 +341,9 @@ const CustomOrder = () => {
             </div>
           </div>
 
-          {/* Testimonials Section */}
+          {/* Real testimonials, same ones shown on the homepage */}
           <div className="mt-16 mb-20">
-            <div className="text-center mb-10">
-              <h3 className="text-3xl font-serif text-[#5A4232]">What Our Customers Say</h3>
-              <div className="w-20 h-1 bg-[#C9A66B]/50 mx-auto mt-4"></div>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {[
-                {
-                  text: "The custom candle exceeded all my expectations. The fragrance blend was perfect and the packaging was beautiful.",
-                  author: "Emma S.",
-                  role: "Repeat Customer"
-                },
-                {
-                  text: "I ordered custom candles for my wedding favors and guests couldn't stop complimenting them. Worth every penny!",
-                  author: "Michael T.",
-                  role: "Wedding Client"
-                },
-                {
-                  text: "The ability to customize every aspect made this a perfect gift for my mother. The customer service was exceptional.",
-                  author: "Sarah L.",
-                  role: "Gift Buyer"
-                }
-              ].map((testimonial, idx) => (
-                <motion.div 
-                  key={idx}
-                  className="bg-white/80 backdrop-blur-md rounded-2xl p-6 shadow-lg border border-[#EBD6BD]"
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: idx * 0.1 }}
-                  viewport={{ once: true }}
-                >
-                  <svg className="h-8 w-8 text-[#C9A66B] mb-4" fill="currentColor" viewBox="0 0 32 32" aria-hidden="true">
-                    <path d="M9.352 4C4.456 7.456 1 13.12 1 19.36c0 5.088 3.072 8.064 6.624 8.064 3.36 0 5.856-2.688 5.856-5.856 0-3.168-2.208-5.472-5.088-5.472-.576 0-1.344.096-1.536.192.48-3.264 3.552-7.104 6.624-9.024L9.352 4zm16.512 0c-4.8 3.456-8.256 9.12-8.256 15.36 0 5.088 3.072 8.064 6.624 8.064 3.264 0 5.856-2.688 5.856-5.856 0-3.168-2.304-5.472-5.184-5.472-.576 0-1.248.096-1.44.192.48-3.264 3.456-7.104 6.528-9.024L25.864 4z" />
-                  </svg>
-                  <p className="text-gray-600 italic mb-4">{testimonial.text}</p>
-                  <div className="flex items-center">
-                    <div className="h-8 w-8 rounded-full bg-[#5A4232]/10 flex items-center justify-center text-[#5A4232] font-serif">
-                      {testimonial.author[0]}
-                    </div>
-                    <div className="ml-3">
-                      <h4 className="text-[#5A4232] font-medium">{testimonial.author}</h4>
-                      <p className="text-gray-500 text-sm">{testimonial.role}</p>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
+            <Testimonials />
           </div>
 
           {/* Enhanced Sliding Image Section */}
@@ -423,5 +416,3 @@ const CustomOrder = () => {
 };
 
 export default CustomOrder;
-
-

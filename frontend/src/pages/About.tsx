@@ -74,27 +74,39 @@ const About = () => {
             <motion.div
               initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}
               viewport={{ once: true }}
-              className="flex flex-col items-center justify-center gap-6 mb-24"
+              className="flex flex-col items-center justify-center gap-8 mb-24"
             >
               <p className="text-sm tracking-[0.2em] uppercase text-[#C9A66B] font-medium">Our Evolution</p>
-              <div className="flex items-center gap-6 sm:gap-10">
-                <div className="flex flex-col items-center gap-3">
+              <div className="flex items-center gap-8 sm:gap-14">
+                <div className="flex flex-col items-center gap-4">
                   {aboutContent.candlelightDukeLogo ? (
-                    <img src={aboutContent.candlelightDukeLogo} alt="Candlelight Duke" className="w-28 h-28 sm:w-36 sm:h-36 object-contain opacity-80 grayscale" />
+                    <div className="w-40 h-40 sm:w-52 sm:h-52 rounded-full bg-white/60 backdrop-blur-sm border border-[#C9A66B]/25 shadow-lg flex items-center justify-center p-4">
+                      <img src={aboutContent.candlelightDukeLogo} alt="Candlelight Duke" className="w-full h-full object-contain" />
+                    </div>
                   ) : (
-                    <div className="w-28 h-28 sm:w-36 sm:h-36 rounded-full bg-white/50 border border-dashed border-[#C9A66B]/40" />
+                    <div className="w-40 h-40 sm:w-52 sm:h-52 rounded-full bg-white/50 border border-dashed border-[#C9A66B]/40" />
                   )}
                   <span className="text-sm text-gray-500 font-serif">Candlelight Duke</span>
                 </div>
+
                 <ArrowRight className="w-8 h-8 text-[#C9A66B] flex-shrink-0" />
-                <div className="flex flex-col items-center gap-3">
+
+                <motion.div
+                  initial={{ x: '-60%', opacity: 0 }}
+                  whileInView={{ x: 0, opacity: 1 }}
+                  transition={{ duration: 1.1, ease: 'easeOut', delay: 0.3 }}
+                  viewport={{ once: true }}
+                  className="flex flex-col items-center gap-4"
+                >
                   {aboutContent.pahadiCraftLogo ? (
-                    <img src={aboutContent.pahadiCraftLogo} alt="Pahadi Craft" className="w-28 h-28 sm:w-36 sm:h-36 object-contain" />
+                    <div className="w-40 h-40 sm:w-52 sm:h-52 rounded-full bg-white/60 backdrop-blur-sm border border-[#C9A66B]/25 shadow-lg flex items-center justify-center p-4">
+                      <img src={aboutContent.pahadiCraftLogo} alt="Pahadi Craft" className="w-full h-full object-contain" />
+                    </div>
                   ) : (
-                    <div className="w-28 h-28 sm:w-36 sm:h-36 rounded-full bg-white/50 border border-dashed border-[#C9A66B]/40" />
+                    <div className="w-40 h-40 sm:w-52 sm:h-52 rounded-full bg-white/50 border border-dashed border-[#C9A66B]/40" />
                   )}
                   <span className="text-sm text-[#5A4232] font-serif font-medium">Pahadi Craft</span>
-                </div>
+                </motion.div>
               </div>
             </motion.div>
           )}
