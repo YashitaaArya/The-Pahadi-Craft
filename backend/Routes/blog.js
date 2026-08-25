@@ -33,9 +33,39 @@ router.get('/:slug', async (req, res) => {
       { new: true }
     );
     if (!post) return res.status(404).json({ error: 'Post not found' });
-    res.json(post.toJSON());
+    const json = post.toJSON();
+    const { uid } = req.query;
+    json.likedByViewer = uid ? post.likedBy.includes(uid) : false;
+    res.json(json);
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch post' });
+  }
+});
+
+// POST /api/blog/:slug/like - toggles a like. Requires a logged-in customer's
+// uid, matching the trust pattern used elsewhere in this app (no separate
+// Firebase token verification) - but critically, this is what actually stops
+// anonymous/repeat likes, since each uid can only appear once in likedBy.
+router.post('/:slug/like', async (req, res) => {
+  try {
+    const { uid } = req.body;
+    if (!uid) {
+      return res.status(401).json({ error: 'Sign in to like this post.' });
+    }
+    const post = await BlogPost.findOne({ slug: req.params.slug });
+    if (!post) return res.status(404).json({ error: 'Post not found' });
+
+    const alreadyLiked = post.likedBy.includes(uid);
+    if (alreadyLiked) {
+      post.likedBy = post.likedBy.filter((id) => id !== uid);
+    } else {
+      post.likedBy.push(uid);
+    }
+    await post.save();
+
+    res.json({ likes: post.likedBy.length, liked: !alreadyLiked });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to update like' });
   }
 });
 

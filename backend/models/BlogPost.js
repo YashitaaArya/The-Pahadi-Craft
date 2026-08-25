@@ -12,14 +12,17 @@ const blogPostSchema = new mongoose.Schema({
   featured: { type: Boolean, default: false },
   status: { type: String, enum: ['draft', 'published'], default: 'published' },
   views: { type: Number, default: 0 },
+  likedBy: { type: [String], default: [] }, // Firebase uids of customers who liked this post
 }, { timestamps: true });
 
 blogPostSchema.set('toJSON', {
   virtuals: true,
   transform: (_doc, ret) => {
     ret.id = ret._id.toString();
+    ret.likes = (ret.likedBy || []).length;
     delete ret._id;
     delete ret.__v;
+    delete ret.likedBy; // count is public, the list of who liked it isn't
     return ret;
   }
 });

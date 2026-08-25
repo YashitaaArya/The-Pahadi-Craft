@@ -46,8 +46,8 @@ const Hero = () => {
       <AnimatePresence mode="sync">
         <motion.div
           key={backgroundImage}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
+          initial={{ opacity: 0, scale: 1.05 }}
+          animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 1.2, ease: 'easeInOut' }}
           className="absolute inset-0 z-0"
@@ -59,7 +59,7 @@ const Hero = () => {
             backgroundRepeat: 'no-repeat',
           }}
         >
-          <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/40 to-black/60" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/10 to-black/30" />
         </motion.div>
       </AnimatePresence>
 
@@ -137,5 +137,5 @@ const Hero = () => {
     </div>
   );
 };
-
+ 
 export default Hero;
