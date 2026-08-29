@@ -15,6 +15,7 @@ const userSchema = new mongoose.Schema({
     pincode: String
   },
   photo: String,
+  likedProducts: { type: [String], default: [] }, // product ids the customer has liked
   // Lets you segment "active in the last N days" for promotions later.
   lastLogin: { type: Date, default: Date.now },
   createdAt: { type: Date, default: Date.now }

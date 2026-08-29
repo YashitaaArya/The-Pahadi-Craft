@@ -148,6 +148,26 @@ export const deleteTestimonial = async (id: string) => {
   await api.delete(`/testimonials/${id}`);
 };
 
+export const getLikedProductIds = async (uid: string): Promise<string[]> => {
+  const response = await api.get(`/user/liked-products`, { params: { uid } });
+  return response.data.likedProducts;
+};
+
+export const toggleProductLike = async (uid: string, productId: string): Promise<{ liked: boolean }> => {
+  const response = await api.post('/user/liked-products/toggle', { uid, productId });
+  return response.data;
+};
+
+export const uploadCustomerReviewImage = async (file: File, uid: string): Promise<string> => {
+  const formData = new FormData();
+  formData.append('image', file);
+  formData.append('uid', uid);
+  const response = await api.post('/upload/customer-review', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return response.data.url;
+};
+
 // Public - any logged-in customer can call this. Always lands as "pending"
 // on the backend, so nothing shows on the site until an admin approves it.
 export const submitCustomerTestimonial = async (data: {
@@ -218,6 +238,11 @@ export const updateCollection = async (category: string, data: { image?: string;
 
 // --- Admin team management (developer only) ---
 
+export const bulkDeleteProducts = async (ids: string[]): Promise<{ deletedCount: number }> => {
+  const response = await api.post('/products/bulk-delete', { ids });
+  return response.data;
+};
+
 export const getAdminTeam = async () => {
   const response = await api.get('/admin/team');
   return response.data;
@@ -246,9 +271,4 @@ export const uploadProductImage = async (file: File): Promise<string> => {
     headers: { 'Content-Type': 'multipart/form-data' },
   });
   return response.data.url;
-};
-
-export const bulkDeleteProducts = async (ids: string[]): Promise<{ deletedCount: number }> => {
-  const response = await api.post('/products/bulk-delete', { ids });
-  return response.data;
 };

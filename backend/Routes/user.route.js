@@ -56,4 +56,39 @@ router.post('/save', async (req, res) => {
   }
 });
 
+// GET /api/user/liked-products?uid=xxx - returns the list of product ids this customer has liked
+router.get('/liked-products', async (req, res) => {
+  try {
+    const { uid } = req.query;
+    if (!uid) return res.status(400).json({ error: 'uid is required' });
+    const user = await User.findOne({ uid });
+    res.json({ likedProducts: user?.likedProducts || [] });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch liked products' });
+  }
+});
+
+// POST /api/user/liked-products/toggle - requires uid + productId, toggles the like
+router.post('/liked-products/toggle', async (req, res) => {
+  try {
+    const { uid, productId } = req.body;
+    if (!uid || !productId) {
+      return res.status(400).json({ error: 'uid and productId are required' });
+    }
+    const user = await User.findOne({ uid });
+    if (!user) return res.status(404).json({ error: 'Sign in to like products.' });
+
+    const alreadyLiked = user.likedProducts.includes(productId);
+    if (alreadyLiked) {
+      user.likedProducts = user.likedProducts.filter((id) => id !== productId);
+    } else {
+      user.likedProducts.push(productId);
+    }
+    await user.save();
+    res.json({ liked: !alreadyLiked, likedProducts: user.likedProducts });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to update liked products' });
+  }
+});
+
 module.exports = router;
