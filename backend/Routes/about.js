@@ -27,7 +27,26 @@ router.get('/', async (req, res) => {
 router.put('/', adminAuth, requirePermission('content:write'), async (req, res) => {
   try {
     const doc = await getOrCreate();
-    Object.assign(doc, req.body);
+
+    const allowedFields = [
+      'candlelightDukeLogo',
+      'pahadiCraftLogo',
+      'founderPhoto',
+      'founderName',
+      'founderTitle',
+      'founderBio',
+      'historyIntro',
+      'historyJourney',
+      'historyToday',
+      'vision',
+    ];
+
+    allowedFields.forEach((field) => {
+      if (Object.prototype.hasOwnProperty.call(req.body, field)) {
+        doc[field] = req.body[field];
+      }
+    });
+
     await doc.save();
     res.json(doc.toJSON());
   } catch (err) {
