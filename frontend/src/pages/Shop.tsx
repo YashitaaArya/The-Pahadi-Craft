@@ -9,6 +9,8 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import ProductImageCarousel from '../components/ProductImageCarousel';
 import { getProductImageUrls } from '../utils/productImages';
 import { Product, ProductColorVariant, ProductFragranceVariant } from '../types';
+import { useAuthStore } from '../store/authStore';
+import { getLikedProductIds, toggleProductLike } from '../api/adminApi';
 
 // Fixed top-level categories - matches backend/config/categories.js exactly.
 const MAIN_CATEGORIES = [
@@ -36,7 +38,62 @@ const Shop = () => {
   const { addItem } = useCartStore();
   const { products, fetchProducts } = useProductStore();
   const navigate = useNavigate();
+  const { user } = useAuthStore();
+  const [likedProductIds, setLikedProductIds] = useState<Set<string>>(new Set());
   const [subcategoriesByCategory, setSubcategoriesByCategory] = useState<Record<string, string[]>>({});
+
+  useEffect(() => {
+    if (user) {
+      getLikedProductIds(user.uid)
+        .then((ids) => setLikedProductIds(new Set(ids)))
+        .catch(() => setLikedProductIds(new Set()));
+    } else {
+      setLikedProductIds(new Set());
+    }
+  }, [user]);
+
+  const handleToggleLike = async (productId: string) => {
+    if (!user) {
+      navigate('/auth');
+      return;
+    }
+    // Optimistic update
+    setLikedProductIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(productId)) next.delete(productId);
+      else next.add(productId);
+      return next;
+    });
+    try {
+      await toggleProductLike(user.uid, productId);
+    } catch {
+      // Revert on failure
+      setLikedProductIds((prev) => {
+        const next = new Set(prev);
+        if (next.has(productId)) next.delete(productId);
+        else next.add(productId);
+        return next;
+      });
+    }
+  };
+
+  const handleShare = async (product: Product) => {
+    const url = `${window.location.origin}/shop?product=${product.id}`;
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: product.name, text: `Check out ${product.name} on Pahadi Craft`, url });
+        return;
+      } catch {
+        // user cancelled or share failed - fall through to clipboard
+      }
+    }
+    try {
+      await navigator.clipboard.writeText(url);
+      alert('Link copied to clipboard!');
+    } catch {
+      // ignore - nothing more we can do without clipboard permission
+    }
+  };
 
   // Fetch products on mount
   useEffect(() => {
@@ -64,6 +121,15 @@ const Shop = () => {
       setSearchQuery(searchParam);
     }
   }, [searchParams]);
+
+  // Opens the specific product's modal when arriving via a shared /shop?product=<id> link
+  useEffect(() => {
+    const productId = searchParams.get('product');
+    if (productId && products.length > 0) {
+      const match = products.find((p) => p.id === productId);
+      if (match) setSelectedProduct(match);
+    }
+  }, [searchParams, products]);
 
   const handleAddToCart = (product: Product, qty = 1) => {
     if ((product.colorVariants ?? []).length > 0 && !selectedColorVariant) {
@@ -251,13 +317,29 @@ const Shop = () => {
                 whileHover={{ scale: 1.02 }}
                 onClick={() => setSelectedProduct(product)}
               >
-                <ProductImageCarousel
-                  images={getProductImageUrls(product)}
-                  alt={product.name}
-                  className="h-60"
-                  showThumbnails={false}
-                  onImageClick={() => setSelectedProduct(product)}
-                />
+                <div className="relative">
+                  <ProductImageCarousel
+                    images={getProductImageUrls(product)}
+                    alt={product.name}
+                    className="h-60"
+                    showThumbnails={false}
+                    onImageClick={() => setSelectedProduct(product)}
+                  />
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleToggleLike(product.id);
+                    }}
+                    className="absolute top-2 right-2 w-8 h-8 rounded-full bg-white/90 shadow flex items-center justify-center hover:bg-white transition-colors"
+                    title={user ? 'Like this product' : 'Sign in to like this product'}
+                  >
+                    <Heart
+                      className={`w-4 h-4 transition-colors ${
+                        likedProductIds.has(product.id) ? 'text-red-500 fill-red-500' : 'text-gray-400'
+                      }`}
+                    />
+                  </button>
+                </div>
                 <div className="p-4">
                   <h3 className="text-xl font-serif text-[#5A4232] font-semibold mb-1">{product.name}</h3>
                   <p className="text-sm text-[#6B5849] mb-2 truncate">{product.description}</p>
@@ -399,14 +481,30 @@ const Shop = () => {
                             />
                           ))}
                         </div>
-                        <span className="text-xs ml-1.5 text-gray-500 font-medium">(32 reviews)</span>
+                        <span className="text-xs ml-1.5 text-gray-500 font-medium">
+                          {selectedProduct.reviewCount ? `(${selectedProduct.reviewCount} reviews)` : 'No reviews yet'}
+                        </span>
                       </div>
                     </div>
                     <div className="flex space-x-1">
-                      <button className="p-1.5 rounded-full hover:bg-[#F5E9DA] transition-all group">
-                        <Heart className="w-4 h-4 text-gray-400 group-hover:text-[#C9A66B] transition-colors" />
+                      <button
+                        onClick={() => handleToggleLike(selectedProduct.id)}
+                        className="p-1.5 rounded-full hover:bg-[#F5E9DA] transition-all group"
+                        title={user ? 'Like this product' : 'Sign in to like this product'}
+                      >
+                        <Heart
+                          className={`w-4 h-4 transition-colors ${
+                            likedProductIds.has(selectedProduct.id)
+                              ? 'text-red-500 fill-red-500'
+                              : 'text-gray-400 group-hover:text-[#C9A66B]'
+                          }`}
+                        />
                       </button>
-                      <button className="p-1.5 rounded-full hover:bg-[#F5E9DA] transition-all group">
+                      <button
+                        onClick={() => handleShare(selectedProduct)}
+                        className="p-1.5 rounded-full hover:bg-[#F5E9DA] transition-all group"
+                        title="Share this product"
+                      >
                         <Share2 className="w-4 h-4 text-gray-400 group-hover:text-[#C9A66B] transition-colors" />
                       </button>
                     </div>

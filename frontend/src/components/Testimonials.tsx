@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Star, ExternalLink, MessageSquarePlus } from 'lucide-react';
+import { Star, ExternalLink, MessageSquarePlus, UploadCloud, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { getTestimonials, submitCustomerTestimonial } from '../api/adminApi';
+import { getTestimonials, submitCustomerTestimonial, uploadCustomerReviewImage } from '../api/adminApi';
+import { compressImage } from '../utils/compressImage';
 import { useAuthStore } from '../store/authStore';
 
 interface Testimonial {
@@ -63,6 +64,9 @@ const ShareExperienceForm: React.FC<{ onSubmitted: () => void }> = ({ onSubmitte
   const [open, setOpen] = useState(false);
   const [content, setContent] = useState('');
   const [rating, setRating] = useState(5);
+  const [images, setImages] = useState<string[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
 
@@ -102,6 +106,31 @@ const ShareExperienceForm: React.FC<{ onSubmitted: () => void }> = ({ onSubmitte
     );
   }
 
+  const handleImagesSelected = async (files: FileList | null) => {
+    const list = Array.from(files || []);
+    if (list.length === 0 || !user) return;
+    setUploading(true);
+    const uploaded: string[] = [];
+    try {
+      for (let i = 0; i < list.length; i++) {
+        setUploadProgress(`${i + 1}/${list.length}`);
+        try {
+          const compressed = await compressImage(list[i]);
+          const url = await uploadCustomerReviewImage(compressed, user.uid);
+          uploaded.push(url);
+        } catch {
+          // skip whichever file failed, keep going with the rest
+        }
+      }
+      if (uploaded.length > 0) {
+        setImages((prev) => [...prev, ...uploaded].slice(0, 5)); // cap at 5 photos
+      }
+    } finally {
+      setUploading(false);
+      setUploadProgress('');
+    }
+  };
+
   const handleSubmit = async () => {
     if (!content.trim()) return;
     setSubmitting(true);
@@ -110,6 +139,7 @@ const ShareExperienceForm: React.FC<{ onSubmitted: () => void }> = ({ onSubmitte
         name: user.displayName || user.email || 'Customer',
         content,
         rating,
+        images,
       });
       setDone(true);
       onSubmitted();
@@ -137,6 +167,40 @@ const ShareExperienceForm: React.FC<{ onSubmitted: () => void }> = ({ onSubmitte
         placeholder="Tell us what you thought..."
         className="w-full border border-gray-200 rounded-lg p-3 text-sm resize-none focus:outline-none focus:border-[#C9A66B]"
       />
+
+      {images.length > 0 && (
+        <div className="flex gap-2 flex-wrap mt-3">
+          {images.map((img, idx) => (
+            <div key={idx} className="relative group">
+              <img src={img} alt={`Your photo ${idx + 1}`} className="w-14 h-14 object-cover rounded-lg border border-gray-200" />
+              <button
+                type="button"
+                onClick={() => setImages((prev) => prev.filter((_, i) => i !== idx))}
+                className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-red-500 text-white rounded-full text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+              >
+                ×
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <label className="flex items-center gap-2 mt-3 px-3 py-1.5 border border-dashed border-gray-300 text-gray-500 rounded-lg text-xs cursor-pointer hover:bg-gray-50 w-fit">
+        {uploading ? <Loader2 size={12} className="animate-spin" /> : <UploadCloud size={12} />}
+        {uploading ? `Uploading ${uploadProgress}...` : 'Add a photo of what you got (optional)'}
+        <input
+          type="file"
+          accept="image/*"
+          multiple
+          className="hidden"
+          disabled={uploading || images.length >= 5}
+          onChange={(e) => {
+            handleImagesSelected(e.target.files);
+            e.target.value = '';
+          }}
+        />
+      </label>
+
       <div className="flex gap-3 mt-3">
         <button
           onClick={handleSubmit}
