@@ -4,6 +4,7 @@ import { ShoppingCart, Star, Heart, Share2, Truck, ShieldCheck, ChevronLeft, Che
 import { useProductStore } from '../store/productStore';
 import { getDriveImage } from '../utils/driveImage';
 import { useCartStore } from '../store/cartStore';
+import { showCartNotification } from '../components/admin/common';
 import { Product } from '../types';
 
 const PremiumCandles: React.FC = () => {
@@ -66,6 +67,7 @@ const PremiumCandles: React.FC = () => {
   // Use premium candles from our dedicated data file
   const handleAddToCart = (product: Product, qty = 1) => {
     addItem(product, qty);
+    showCartNotification(product.name);
   };
 
   // Function to get additional images, handling both property names

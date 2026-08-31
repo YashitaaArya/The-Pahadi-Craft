@@ -8,6 +8,7 @@ import { useProductStore } from '../store/productStore';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import ProductImageCarousel from '../components/ProductImageCarousel';
 import { getProductImageUrls } from '../utils/productImages';
+import { showCartNotification } from '../components/admin/common';
 import { Product, ProductColorVariant, ProductFragranceVariant } from '../types';
 import { useAuthStore } from '../store/authStore';
 import { getLikedProductIds, toggleProductLike } from '../api/adminApi';
@@ -147,6 +148,7 @@ const Shop = () => {
       selectedColorVariant: selectedColorVariant || undefined,
       selectedFragranceVariant: selectedFragranceVariant || undefined,
     }, qty);
+    showCartNotification(product.name);
   };
 
   const filteredProducts = products.filter((product) => {
