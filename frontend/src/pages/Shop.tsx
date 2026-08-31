@@ -35,6 +35,8 @@ const Shop = () => {
   const [quantity, setQuantity] = useState(1);
   const [selectedColorVariant, setSelectedColorVariant] = useState<ProductColorVariant | null>(null);
   const [selectedFragranceVariant, setSelectedFragranceVariant] = useState<ProductFragranceVariant | null>(null);
+  const [sortBy, setSortBy] = useState<'name' | 'price' | 'popularity'>('name');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const { addItem } = useCartStore();
   const { products, fetchProducts } = useProductStore();
   const navigate = useNavigate();
@@ -157,6 +159,19 @@ const Shop = () => {
       product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       product.description.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSubFilter && matchesSearch;
+  }).sort((a, b) => {
+    let compareValue = 0;
+    
+    if (sortBy === 'name') {
+      compareValue = a.name.localeCompare(b.name);
+    } else if (sortBy === 'price') {
+      compareValue = (a.price || 0) - (b.price || 0);
+    } else if (sortBy === 'popularity') {
+      // Sort by review count (popularity metric)
+      compareValue = (b.reviewCount || 0) - (a.reviewCount || 0);
+    }
+    
+    return sortDirection === 'asc' ? compareValue : -compareValue;
   });
 
   // Function to get additional images, handling both property names
@@ -226,12 +241,12 @@ const Shop = () => {
             Our Collection
           </h1>
 
-          {/* Category tab bar - click a main category to reveal its subcategories below */}
-          <div className="mb-4 -mx-4 px-4 sm:mx-0 sm:px-0 overflow-x-auto">
-            <div className="flex gap-2 pb-2 min-w-max sm:min-w-0 sm:flex-wrap">
+          {/* Category tab bar - equal sized tabs in a single line */}
+          <div className="mb-6 -mx-4 px-4 sm:mx-0 sm:px-0 overflow-x-auto">
+            <div className="flex gap-1 min-w-max sm:min-w-0 sm:flex-wrap sm:gap-2">
               <button
                 onClick={() => { setSelectedCategory('All'); setSelectedSubFilter(null); }}
-                className={`text-sm font-semibold px-4 py-2 rounded-full transition whitespace-nowrap ${
+                className={`flex-1 min-w-max sm:min-w-0 text-xs sm:text-sm font-semibold px-2 sm:px-4 py-2 rounded-full transition whitespace-nowrap ${
                   selectedCategory === 'All'
                     ? 'bg-white text-[#5A4232] border-2 border-[#5A4232]'
                     : 'bg-[#3E2A1F] text-white hover:bg-[#5A4232]'
@@ -246,11 +261,12 @@ const Shop = () => {
                     setSelectedCategory(category);
                     setSelectedSubFilter(null);
                   }}
-                  className={`text-sm font-semibold px-4 py-2 rounded-full transition whitespace-nowrap ${
+                  className={`flex-1 min-w-max sm:min-w-0 text-xs sm:text-sm font-semibold px-2 sm:px-4 py-2 rounded-full transition whitespace-nowrap overflow-hidden text-ellipsis ${
                     selectedCategory === category
                       ? 'bg-white text-[#5A4232] border-2 border-[#5A4232]'
                       : 'bg-[#3E2A1F] text-white hover:bg-[#5A4232]'
                   }`}
+                  title={category}
                 >
                   {category}
                 </button>
@@ -296,7 +312,8 @@ const Shop = () => {
             )}
           </AnimatePresence>
 
-          <div className="flex justify-end mb-8">
+          <div className="flex flex-col sm:flex-row gap-4 mb-8 justify-between items-start sm:items-center">
+            {/* Search bar */}
             <div className="relative w-full sm:w-1/2">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <input
@@ -306,6 +323,31 @@ const Shop = () => {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 rounded-full border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#C9A66B] focus:border-transparent"
               />
+            </div>
+
+            {/* Sort controls */}
+            <div className="flex gap-3 w-full sm:w-auto">
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as 'name' | 'price' | 'popularity')}
+                className="px-4 py-2 rounded-full border border-gray-200 bg-white text-[#5A4232] font-medium text-sm focus:outline-none focus:ring-2 focus:ring-[#C9A66B] cursor-pointer hover:border-[#C9A66B]"
+              >
+                <option value="name">Name</option>
+                <option value="price">Price</option>
+                <option value="popularity">Popularity</option>
+              </select>
+              
+              <button
+                onClick={() => setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')}
+                className={`px-4 py-2 rounded-full font-medium text-sm transition ${
+                  sortDirection === 'asc'
+                    ? 'bg-[#C9A66B] text-white'
+                    : 'bg-gray-200 text-[#5A4232] hover:bg-gray-300'
+                }`}
+                title={sortDirection === 'asc' ? 'Ascending' : 'Descending'}
+              >
+                {sortDirection === 'asc' ? '↑' : '↓'}
+              </button>
             </div>
           </div>
 
