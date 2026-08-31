@@ -144,7 +144,11 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
-                <Link to="/faq" className="hover:text-[#C9A66B] transition-colors flex items-center group">
+                <Link 
+                  to="/faq" 
+                  onClick={() => window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })}
+                  className="hover:text-[#C9A66B] transition-colors flex items-center group"
+                >
                   <ArrowRight className="w-4 h-4 mr-2 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
                   <span>FAQ</span>
                 </Link>
