@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Star, ShoppingBag } from 'lucide-react';
 import { Product } from '../types';
 import { useCartStore } from '../store/cartStore';
+import { showCartNotification } from './admin/common';
 import ProductImageCarousel from './ProductImageCarousel';
 import { getProductImageUrls } from '../utils/productImages';
 
@@ -53,7 +54,10 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           </div>
         </div>
         <motion.button
-          onClick={() => addItem(product)}
+          onClick={() => {
+            addItem(product);
+            showCartNotification(product.name);
+          }}
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           className="mt-4 w-full bg-[#5A4232] text-white py-3 rounded-full flex items-center justify-center gap-2 hover:bg-[#C9A66B] transition-all duration-300 group/btn"

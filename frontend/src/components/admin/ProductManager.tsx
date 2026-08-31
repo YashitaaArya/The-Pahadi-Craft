@@ -8,6 +8,7 @@ import { getDriveImage } from '../../utils/driveImage';
 import { uploadProductImage, getProductCategories, bulkDeleteProducts } from '../../api/adminApi';
 import { compressImage } from '../../utils/compressImage';
 import BulkProductUpload from './BulkProductUpload';
+import { ALL_FRAGRANCE_NAMES } from '../../data/fragranceNames';
 import {
   Modal,
   ConfirmationDialog,
@@ -1095,17 +1096,25 @@ const ProductManager: React.FC = () => {
                   <div key={idx} className="border border-gray-200 rounded-lg p-3">
                     <div className="flex items-start gap-3">
                       <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-2">
-                        <input
-                          type="text"
-                          placeholder="Fragrance name (e.g. Lavender)"
-                          value={variant.fragranceName}
-                          onChange={(e) => {
-                            const updated = [...fragranceVariants];
-                            updated[idx] = { ...updated[idx], fragranceName: e.target.value };
-                            setFragranceVariants(updated);
-                          }}
-                          className="input"
-                        />
+                        <div>
+                          <input
+                            type="text"
+                            list={`fragrance-options-${idx}`}
+                            placeholder="Fragrance name (e.g. Lavender)"
+                            value={variant.fragranceName}
+                            onChange={(e) => {
+                              const updated = [...fragranceVariants];
+                              updated[idx] = { ...updated[idx], fragranceName: e.target.value };
+                              setFragranceVariants(updated);
+                            }}
+                            className="input"
+                          />
+                          <datalist id={`fragrance-options-${idx}`}>
+                            {ALL_FRAGRANCE_NAMES.map((name) => (
+                              <option key={name} value={name} />
+                            ))}
+                          </datalist>
+                        </div>
                         <input
                           type="number"
                           placeholder="Stock"

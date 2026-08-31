@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, ShoppingCart, Info, Star, Heart, Clock, Weight, PenTool, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useCartStore } from '../store/cartStore';
 import { getDriveImage } from '../utils/driveImage';
+import { showCartNotification } from '../components/admin/common';
 import { useNavigate } from 'react-router-dom';
 import { Product } from '../types';
 import { useProductStore } from '../store/productStore';
@@ -374,6 +375,7 @@ const OccultCandlesPage = () => {
 
   const handleAddToCart = (product: Product) => {
     addItem(product);
+    showCartNotification(product.name);
   };
 
   // Reset the current image index when a new product is selected

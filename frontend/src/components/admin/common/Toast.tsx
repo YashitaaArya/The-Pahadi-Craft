@@ -1,5 +1,6 @@
 import React from 'react';
 import toast, { Toaster } from 'react-hot-toast';
+import { ShoppingCart } from 'lucide-react';
 
 export { toast };
 
@@ -60,6 +61,35 @@ export const showWarning = (message: string) => {
   ), {
     style: {
       background: '#fef3c7',
+    },
+  });
+};
+
+// Custom cart notification with brand colors
+export const showCartNotification = (productName?: string) => {
+  toast.custom((t) => (
+    <div
+      className={`flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg transform transition-all duration-300 ${
+        t.visible ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'
+      }`}
+      style={{
+        background: 'linear-gradient(135deg, #5A4232 0%, #6B5344 100%)',
+        color: '#FFF8F2',
+        boxShadow: '0 10px 25px rgba(90, 66, 50, 0.3)',
+      }}
+    >
+      <ShoppingCart className="w-5 h-5 flex-shrink-0" style={{ color: '#C9A66B' }} />
+      <div className="flex-1">
+        <p className="font-semibold text-sm">Item added to your cart!</p>
+        <p className="text-xs opacity-90 mt-0.5">Happy Shopping! 🎉</p>
+      </div>
+    </div>
+  ), {
+    duration: 3000,
+    style: {
+      background: 'transparent',
+      boxShadow: 'none',
+      padding: 0,
     },
   });
 };
