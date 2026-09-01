@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShieldAlert, Clock, DollarSign, RotateCcw, Edit3, CheckCircle } from 'lucide-react';
+import { ShieldAlert, DollarSign, RotateCcw, Edit3, CheckCircle } from 'lucide-react';
 
 const Terms: React.FC = () => {
   const [activeSection, setActiveSection] = useState('use-of-website');

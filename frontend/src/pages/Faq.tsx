@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, HelpCircle } from 'lucide-react';
 
@@ -71,6 +71,10 @@ const CATEGORIES = ['All', ...Array.from(new Set(FAQ_ITEMS.map((f) => f.category
 const Faq: React.FC = () => {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
   const [activeCategory, setActiveCategory] = useState('All');
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+  }, []);
 
   const visibleItems = FAQ_ITEMS.filter((f) => activeCategory === 'All' || f.category === activeCategory);
 
