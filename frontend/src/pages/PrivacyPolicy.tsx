@@ -1,9 +1,13 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Lock, Database, Eye, Share2, Cookie, MailOpen } from 'lucide-react';
 
 const PrivacyPolicy: React.FC = () => {
   const [activeSection, setActiveSection] = useState('information-we-collect');
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+  }, []);
 
   const sections = [
     { id: 'information-we-collect', title: 'Information We Collect', icon: Database },
