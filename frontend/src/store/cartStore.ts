@@ -28,19 +28,19 @@ export const useCartStore = create<CartStore>((set, get) => ({
     const existingItem = items.find(item => getCartItemKey(item.product) === cartItemKey);
 
     if (existingItem) {
-      set({
-        items: items.map(item =>
-          getCartItemKey(item.product) === cartItemKey
-            ? { ...item, quantity: item.quantity + quantity }
-            : item
-        ),
-      });
+      const nextItems = items.map(item =>
+        getCartItemKey(item.product) === cartItemKey
+          ? { ...item, quantity: item.quantity + quantity }
+          : item
+      );
+      set({ items: nextItems, isOpen: true });
     } else {
-      set({ items: [...items, { product, quantity }] });
+      set({ items: [...items, { product, quantity }], isOpen: true });
     }
   },
   removeItem: (cartItemKey) => {
-    set({ items: get().items.filter(item => getCartItemKey(item.product) !== cartItemKey) });
+    const nextItems = get().items.filter(item => getCartItemKey(item.product) !== cartItemKey);
+    set({ items: nextItems, isOpen: nextItems.length > 0 ? get().isOpen : false });
   },
   updateQuantity: (cartItemKey, quantity) => {
     set({
@@ -51,8 +51,8 @@ export const useCartStore = create<CartStore>((set, get) => ({
       ),
     });
   },
-  clearCart: () => set({ items: [] }),
-  toggleCart: () => set({ isOpen: !get().isOpen }),
+  clearCart: () => set({ items: [], isOpen: false }),
+  toggleCart: () => set({ isOpen: get().items.length === 0 ? false : !get().isOpen }),
   getTotal: () =>
     get().items.reduce(
       (sum, item) => sum + (Number(item.product.price) * 1.18) * item.quantity,
