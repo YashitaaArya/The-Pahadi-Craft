@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Lock, Database, Eye, Share2, Cookie, Server, MailOpen } from 'lucide-react';
+import { Lock, Database, Eye, Share2, Cookie, MailOpen } from 'lucide-react';
 
 const PrivacyPolicy: React.FC = () => {
   const [activeSection, setActiveSection] = useState('information-we-collect');
@@ -85,34 +85,145 @@ const PrivacyPolicy: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#FFF8F2] to-[#F0E6F6] pt-24 pb-20 px-4">
-      <h1 className="text-3xl font-serif text-[#5A4232] mb-6">Privacy Policy</h1>
-      <p className="text-gray-700 leading-7 mb-4">
-        Your privacy is important to us. This policy outlines how we collect, use, and protect your personal information when you visit or make a purchase from our website.
-      </p>
-      <h2 className="text-2xl font-serif text-[#5A4232] mb-4">Information We Collect</h2>
-      <p className="text-gray-700 leading-7 mb-4">
-        We collect personal information such as your name, email address, phone number, and shipping address when you place an order or subscribe to our newsletter.
-      </p>
-      <h2 className="text-2xl font-serif text-[#5A4232] mb-4">Use of Information</h2>
-      <p className="text-gray-700 leading-7 mb-4">
-        Your information is used solely to process your orders, communicate updates, and enhance your shopping experience. We do not sell or rent your data to third parties.
-      </p>
-      <h2 className="text-2xl font-serif text-[#5A4232] mb-4">Cookies</h2>
-      <p className="text-gray-700 leading-7 mb-4">
-        We use cookies to personalize your browsing experience and improve our website’s functionality. You can disable cookies through your browser settings at any time.
-      </p>
-      <h2 className="text-2xl font-serif text-[#5A4232] mb-4">Third-Party Services</h2>
-      <p className="text-gray-700 leading-7 mb-4">
-        We may use third-party services for payment processing and shipping. These providers have their own privacy policies, and we recommend reviewing them for details.
-      </p>
-      <h2 className="text-2xl font-serif text-[#5A4232] mb-4">Data Security</h2>
-      <p className="text-gray-700 leading-7 mb-4">
-        We implement reasonable security measures to protect your data. However, no method of transmission over the internet is 100% secure.
-      </p>
-      <h2 className="text-2xl font-serif text-[#5A4232] mb-4">Contact Us</h2>
-      <p className="text-gray-700 leading-7 mb-4">
-        If you have questions about our privacy practices, please contact us at support@yourdomain.com.
-      </p>
+      <div className="max-w-6xl mx-auto">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="text-center mb-12"
+        >
+          <div className="w-16 h-16 rounded-full bg-[#E6CCE6] flex items-center justify-center mx-auto mb-6">
+            <Lock className="w-8 h-8 text-[#9370DB]" />
+          </div>
+          <h1 className="text-5xl font-serif text-[#5A4232] mb-4">Privacy Policy</h1>
+          <p className="text-[#8B6B47] max-w-2xl mx-auto text-lg">
+            Your privacy is important to us. This policy outlines exactly how we collect, use, protect, and respect your personal information.
+          </p>
+        </motion.div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+            className="lg:col-span-1"
+          >
+            <div className="bg-white rounded-xl p-6 shadow-lg sticky top-24 h-fit">
+              <h3 className="text-lg font-serif text-[#5A4232] mb-4 pb-3 border-b-2 border-[#9370DB]">
+                Sections
+              </h3>
+              <nav className="space-y-2">
+                {sections.map((section) => {
+                  const Icon = section.icon;
+                  return (
+                    <button
+                      key={section.id}
+                      onClick={() => setActiveSection(section.id)}
+                      className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all text-left ${
+                        activeSection === section.id
+                          ? 'bg-[#9370DB] text-white shadow-md'
+                          : 'text-[#5A4232] hover:bg-[#F0E6F6]'
+                      }`}
+                    >
+                      <Icon className="w-5 h-5 flex-shrink-0" />
+                      <span className="text-sm font-medium">{section.title}</span>
+                    </button>
+                  );
+                })}
+              </nav>
+            </div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+            className="lg:col-span-3"
+          >
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeSection}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.3 }}
+                className="bg-white rounded-xl p-8 shadow-lg"
+              >
+                {(() => {
+                  const section = content[activeSection as keyof typeof content];
+                  const Icon = sections.find((s) => s.id === activeSection)?.icon || Lock;
+
+                  return (
+                    <>
+                      <div className="flex items-center gap-4 mb-6 pb-6 border-b-2 border-[#F0E6F6]">
+                        <div className="w-12 h-12 rounded-full bg-[#E6CCE6] flex items-center justify-center flex-shrink-0">
+                          <Icon className="w-6 h-6 text-[#9370DB]" />
+                        </div>
+                        <div>
+                          <h2 className="text-3xl font-serif text-[#5A4232]">{section.title}</h2>
+                          <p className="text-[#8B6B47] text-sm">{section.description}</p>
+                        </div>
+                      </div>
+
+                      <div className="space-y-4">
+                        {section.details.map((detail, idx) => (
+                          <motion.div
+                            key={idx}
+                            initial={{ opacity: 0, x: -10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: idx * 0.1 }}
+                            className="flex gap-4 items-start group"
+                          >
+                            <div className="w-6 h-6 rounded-full bg-[#9370DB] flex items-center justify-center flex-shrink-0 mt-1 group-hover:scale-110 transition-transform">
+                              <span className="text-white text-xs font-bold">✓</span>
+                            </div>
+                            <p className="text-[#6B5849] leading-relaxed flex-1 group-hover:text-[#5A4232] transition-colors">
+                              {detail}
+                            </p>
+                          </motion.div>
+                        ))}
+                      </div>
+
+                      <div className="mt-8 pt-6 border-t border-[#F0E6F6] bg-[#F9F4EF] rounded-lg p-4">
+                        <p className="text-sm text-[#8B6B47]">
+                          🔒 <strong>Data Protection:</strong> We are committed to protecting your privacy in accordance with applicable data protection laws.
+                        </p>
+                      </div>
+                    </>
+                  );
+                })()}
+              </motion.div>
+            </AnimatePresence>
+          </motion.div>
+        </div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.3 }}
+          className="mt-12 bg-gradient-to-r from-[#E6CCE6] to-[#D8BFD8] rounded-xl p-6 border border-[#D8BFD8]"
+        >
+          <p className="text-[#5A3A7A] font-semibold mb-2">📋 Important Notice:</p>
+          <p className="text-[#5A3A7A] leading-relaxed">
+            This Privacy Policy is effective as of September 2026. We may update this policy periodically to reflect changes in our practices or applicable laws. We will notify you of any significant changes via email or by posting the updated policy on our website. Your continued use of our website after such modifications constitutes your acceptance of the updated Privacy Policy.
+          </p>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.4 }}
+          className="mt-8 text-center"
+        >
+          <p className="text-[#8B6B47] max-w-2xl mx-auto">
+            For privacy-related concerns or to exercise your data rights, please{' '}
+            <a href="/contact" className="text-[#9370DB] font-semibold hover:text-[#5A4232] transition-colors underline">
+              contact us
+            </a>
+            .
+          </p>
+        </motion.div>
+      </div>
     </div>
   );
 };
