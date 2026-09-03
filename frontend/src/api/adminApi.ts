@@ -34,6 +34,7 @@ export const getProducts = async () => {
 
 export const getProductCategories = async (): Promise<{
   mainCategories: string[];
+  subcategoriesByCategory: Record<string, string[]>;
   primeSubcategories: string[];
   secondarySubcategories: string[];
 }> => {

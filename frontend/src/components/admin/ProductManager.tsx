@@ -77,9 +77,8 @@ const ProductManager: React.FC = () => {
   const [uploadingImage, setUploadingImage] = useState(false);
   const [uploadingGalleryImages, setUploadingGalleryImages] = useState(false);
   const [galleryUploadProgress, setGalleryUploadProgress] = useState('');
-  const [categorySuggestions, setCategorySuggestions] = useState<{ primeSubcategories: string[]; secondarySubcategories: string[] }>({
-    primeSubcategories: [],
-    secondarySubcategories: [],
+  const [categorySuggestions, setCategorySuggestions] = useState<{ subcategoriesByCategory: Record<string, string[]> }>({
+    subcategoriesByCategory: {},
   });
   const [colorVariants, setColorVariants] = useState<ProductColorVariant[]>([]);
   const [fragranceVariants, setFragranceVariants] = useState<ProductFragranceVariant[]>([]);
@@ -92,8 +91,7 @@ const ProductManager: React.FC = () => {
   useEffect(() => {
     getProductCategories()
       .then((data) => setCategorySuggestions({
-        primeSubcategories: data.primeSubcategories,
-        secondarySubcategories: data.secondarySubcategories,
+        subcategoriesByCategory: data.subcategoriesByCategory,
       }))
       .catch(() => {
         // Non-critical - the fields still work as plain free text without suggestions.
@@ -115,7 +113,6 @@ const ProductManager: React.FC = () => {
         subcategory: '',
         mainCategory: '',
         primeSubcategory: '',
-        secondarySubcategory: '',
         scented: false,
         size: '',
         material: '',
@@ -191,7 +188,6 @@ const ProductManager: React.FC = () => {
         subcategory: '',
         mainCategory: '',
         primeSubcategory: '',
-        secondarySubcategory: '',
         scented: false,
         size: '',
         material: '',
@@ -639,7 +635,7 @@ const ProductManager: React.FC = () => {
           </div>
 
           {/* Category & Subcategory */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Main Category *
@@ -657,36 +653,15 @@ const ProductManager: React.FC = () => {
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Prime Subcategory
               </label>
-              <input
-                type="text"
-                list="prime-subcategory-options"
+              <select
                 {...register('primeSubcategory')}
                 className="input"
-                placeholder="e.g. Glass Jar Candles"
-              />
-              <datalist id="prime-subcategory-options">
-                {categorySuggestions.primeSubcategories.map((s) => (
-                  <option key={s} value={s} />
+              >
+                <option value="">Select Collection</option>
+                {(categorySuggestions.subcategoriesByCategory[watch('mainCategory')] || []).map((sub) => (
+                  <option key={sub} value={sub}>{sub}</option>
                 ))}
-              </datalist>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Secondary Subcategory
-              </label>
-              <input
-                type="text"
-                list="secondary-subcategory-options"
-                {...register('secondarySubcategory')}
-                className="input"
-                placeholder="Optional, more specific"
-              />
-              <datalist id="secondary-subcategory-options">
-                {categorySuggestions.secondarySubcategories.map((s) => (
-                  <option key={s} value={s} />
-                ))}
-              </datalist>
+              </select>
             </div>
           </div>
 
