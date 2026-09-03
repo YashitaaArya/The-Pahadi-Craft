@@ -198,6 +198,18 @@ function AppRoutes() {
         }
       />
       <Route
+        path="/blog"
+        element={
+          <div className="min-h-screen bg-[#FFF8F2]">
+            <Navbar />
+            <Cart />
+            <ContactSlider />
+            <Blog />
+            <Footer />
+          </div>
+        }
+      />
+      <Route
         path="/blog/:slug"
         element={
           <div className="min-h-screen bg-[#FFF8F2]">
