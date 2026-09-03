@@ -259,7 +259,7 @@ const Shop = () => {
             <div className="flex gap-1 min-w-max sm:min-w-0 sm:flex-wrap sm:gap-2">
               <button
                 onClick={() => { setSelectedCategory('All'); setSelectedSubFilter(null); setIsFilterDropdownOpen(false); }}
-                className={`flex-1 min-w-max sm:min-w-0 text-xs sm:text-sm font-semibold px-2 sm:px-4 py-2 rounded-full transition whitespace-nowrap ${
+                className={`flex-1 min-w-max sm:min-w-0 text-sm sm:text-base font-semibold px-2 sm:px-4 py-3 sm:py-3.5 rounded-full transition whitespace-nowrap ${
                   selectedCategory === 'All'
                     ? 'bg-white text-[#5A4232] border-2 border-[#5A4232]'
                     : 'bg-[#3E2A1F] text-white hover:bg-[#5A4232]'
@@ -275,7 +275,7 @@ const Shop = () => {
                     setSelectedSubFilter(null);
                     setIsFilterDropdownOpen(false);
                   }}
-                  className={`flex-1 min-w-max sm:min-w-0 text-xs sm:text-sm font-semibold px-2 sm:px-4 py-2 rounded-full transition whitespace-nowrap overflow-hidden text-ellipsis ${
+                  className={`flex-1 min-w-max sm:min-w-0 text-sm sm:text-base font-semibold px-2 sm:px-4 py-3 sm:py-3.5 rounded-full transition whitespace-nowrap overflow-hidden text-ellipsis ${
                     selectedCategory === category
                       ? 'bg-white text-[#5A4232] border-2 border-[#5A4232]'
                       : 'bg-[#3E2A1F] text-white hover:bg-[#5A4232]'
