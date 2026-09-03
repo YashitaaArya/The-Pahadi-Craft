@@ -198,13 +198,13 @@ function AppRoutes() {
         }
       />
       <Route
-        path="/blog"
+        path="/blog/:slug"
         element={
           <div className="min-h-screen bg-[#FFF8F2]">
             <Navbar />
             <Cart />
             <ContactSlider />
-            <Blog />
+            <BlogPost />
             <Footer />
           </div>
         }
@@ -373,6 +373,7 @@ function App() {
 }
 
 import PopupOffer from './components/PopupOffer';
+import BlogPost from './pages/BlogPost';
 
 const HomePage = () => {
   const [showPopup, setShowPopup] = React.useState(false);
