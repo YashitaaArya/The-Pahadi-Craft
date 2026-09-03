@@ -44,6 +44,7 @@ const Shop = () => {
   const { user } = useAuthStore();
   const [likedProductIds, setLikedProductIds] = useState<Set<string>>(new Set());
   const [subcategoriesByCategory, setSubcategoriesByCategory] = useState<Record<string, string[]>>({});
+  const [isFilterDropdownOpen, setIsFilterDropdownOpen] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -231,6 +232,16 @@ const Shop = () => {
     setSelectedFragranceVariant(null);
   }, [selectedProduct]);
 
+  // Get subcategories for current category that have at least one product
+  const getFilteredSubcategoriesForCategory = (category: string): string[] => {
+    const allSubs = subcategoriesByCategory[category] || [];
+    return allSubs.filter(sub => 
+      products.some(p => (p.mainCategory || p.category) === category && p.primeSubcategory === sub)
+    );
+  };
+
+  const filteredSubcategories = selectedCategory !== 'All' ? getFilteredSubcategoriesForCategory(selectedCategory) : [];
+
   return (
     <div className="min-h-screen pt-20 bg-[#FFF8F2]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -247,7 +258,7 @@ const Shop = () => {
           <div className="mb-6 -mx-4 px-4 sm:mx-0 sm:px-0 overflow-x-auto">
             <div className="flex gap-1 min-w-max sm:min-w-0 sm:flex-wrap sm:gap-2">
               <button
-                onClick={() => { setSelectedCategory('All'); setSelectedSubFilter(null); }}
+                onClick={() => { setSelectedCategory('All'); setSelectedSubFilter(null); setIsFilterDropdownOpen(false); }}
                 className={`flex-1 min-w-max sm:min-w-0 text-xs sm:text-sm font-semibold px-2 sm:px-4 py-2 rounded-full transition whitespace-nowrap ${
                   selectedCategory === 'All'
                     ? 'bg-white text-[#5A4232] border-2 border-[#5A4232]'
@@ -262,6 +273,7 @@ const Shop = () => {
                   onClick={() => {
                     setSelectedCategory(category);
                     setSelectedSubFilter(null);
+                    setIsFilterDropdownOpen(false);
                   }}
                   className={`flex-1 min-w-max sm:min-w-0 text-xs sm:text-sm font-semibold px-2 sm:px-4 py-2 rounded-full transition whitespace-nowrap overflow-hidden text-ellipsis ${
                     selectedCategory === category
@@ -276,39 +288,68 @@ const Shop = () => {
             </div>
           </div>
 
-          {/* Subcategory chips for the active main category - Flipkart-style */}
+          {/* Filter dropdown for subcategories */}
           <AnimatePresence>
-            {selectedCategory !== 'All' && (subcategoriesByCategory[selectedCategory]?.length ?? 0) > 0 && (
+            {selectedCategory !== 'All' && filteredSubcategories.length > 0 && (
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
                 exit={{ opacity: 0, height: 0 }}
-                className="mb-6 -mx-4 px-4 sm:mx-0 sm:px-0 overflow-hidden"
+                className="mb-6 relative"
               >
-                <div className="flex gap-2 pb-2 overflow-x-auto">
+                <div className="relative inline-block">
                   <button
-                    onClick={() => setSelectedSubFilter(null)}
-                    className={`text-xs font-medium px-3 py-1.5 rounded-full transition whitespace-nowrap border ${
-                      !selectedSubFilter
-                        ? 'bg-[#C9A66B] text-white border-[#C9A66B]'
-                        : 'bg-white text-[#5A4232] border-[#E6DFD7] hover:border-[#C9A66B]'
-                    }`}
+                    onClick={() => setIsFilterDropdownOpen(!isFilterDropdownOpen)}
+                    className="flex items-center gap-2 px-4 py-2 rounded-full border border-[#C9A66B] text-[#5A4232] font-medium text-sm hover:bg-[#C9A66B]/10 transition-colors"
                   >
-                    All {selectedCategory}
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                    </svg>
+                    Filter by Collection
+                    <svg className={`w-4 h-4 transition-transform ${isFilterDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
                   </button>
-                  {subcategoriesByCategory[selectedCategory].map((sub) => (
-                    <button
-                      key={sub}
-                      onClick={() => setSelectedSubFilter(sub)}
-                      className={`text-xs font-medium px-3 py-1.5 rounded-full transition whitespace-nowrap border ${
-                        selectedSubFilter === sub
-                          ? 'bg-[#C9A66B] text-white border-[#C9A66B]'
-                          : 'bg-white text-[#5A4232] border-[#E6DFD7] hover:border-[#C9A66B]'
-                      }`}
+
+                  {isFilterDropdownOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ duration: 0.2 }}
+                      className="absolute top-full left-0 mt-2 bg-white border border-[#E6DFD7] rounded-lg shadow-lg z-10 min-w-max"
                     >
-                      {sub}
-                    </button>
-                  ))}
+                      <button
+                        onClick={() => {
+                          setSelectedSubFilter(null);
+                          setIsFilterDropdownOpen(false);
+                        }}
+                        className={`w-full text-left px-4 py-2 text-sm transition-colors ${
+                          !selectedSubFilter
+                            ? 'bg-[#C9A66B] text-white font-medium'
+                            : 'text-[#5A4232] hover:bg-[#F5E9DA]'
+                        }`}
+                      >
+                        All {selectedCategory}
+                      </button>
+                      {filteredSubcategories.map((sub) => (
+                        <button
+                          key={sub}
+                          onClick={() => {
+                            setSelectedSubFilter(sub);
+                            setIsFilterDropdownOpen(false);
+                          }}
+                          className={`w-full text-left px-4 py-2 text-sm border-t border-[#E6DFD7] transition-colors ${
+                            selectedSubFilter === sub
+                              ? 'bg-[#C9A66B] text-white font-medium'
+                              : 'text-[#5A4232] hover:bg-[#F5E9DA]'
+                          }`}
+                        >
+                          {sub}
+                        </button>
+                      ))}
+                    </motion.div>
+                  )}
                 </div>
               </motion.div>
             )}
