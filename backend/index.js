@@ -97,3 +97,8 @@ app.listen(PORT, () => {
 
 const sitemap = require('./Routes/sitemap');
 app.use('/api', sitemap);
+
+const analytics = require('./Routes/analytics');
+const userExport = require('./Routes/userExport');
+app.use('/api/analytics', analytics);
+app.use('/api/users', userExport);

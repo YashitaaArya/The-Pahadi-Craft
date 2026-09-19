@@ -2,10 +2,13 @@ const mongoose = require('mongoose');
 
 const testimonialSchema = new mongoose.Schema({
   name: { type: String, required: true },
-  image: { type: String, default: '' },
+  // Photos of the actual product/purchase the customer shared.
+  images: { type: [String], default: [] },
   content: { type: String, required: true },
   rating: { type: Number, default: 5 },
-  status: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending' },
+  // No approval gate: reviews go live immediately so the section stays
+  // organic. Admin keeps full edit/delete control instead of approval.
+  status: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'approved' },
 }, { timestamps: true });
 
 testimonialSchema.set('toJSON', {
