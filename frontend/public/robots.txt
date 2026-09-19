@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+
+Sitemap: https://thepahadicraft.com/sitemap.xml
+Sitemap: https://the-pahadi-craft.onrender.com/api/blog-sitemap.xml
