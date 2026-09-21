@@ -29,11 +29,7 @@ if (emailConfigured) {
 
 async function sendContactEmail({ name, email, subject, message }) {
   const recipient = process.env.EMAIL_USER;
-
-  if (!transporter) {
-    throw new Error('No email provider is configured');
-  }
-
+  if (!transporter) throw new Error('No email provider is configured');
   await transporter.sendMail({
     from: `"Pahadi Craft Website" <${process.env.EMAIL_USER}>`,
     to: recipient,
@@ -43,8 +39,7 @@ async function sendContactEmail({ name, email, subject, message }) {
   });
 }
 
-// POST /api/contact - public. Saves the message (always, so nothing is lost
-// even if email delivery fails) and tries to email the owner a notification.
+// POST /api/contact - public
 router.post('/', async (req, res) => {
   try {
     const { name, email, subject, message } = req.body;
@@ -71,20 +66,39 @@ router.post('/', async (req, res) => {
       console.error('Contact email send failed:', emailErr);
     }
 
-    res.status(201).json({ 
-        success: true, 
-        id: saved.id,
-        emailNotification: transporter ? 'sent_or_pending' : 'not_configured'});
+    res.status(201).json({
+      success: true,
+      id: saved.id,
+      emailNotification: transporter ? 'sent_or_pending' : 'not_configured',
+    });
   } catch (err) {
     console.error('Contact form error:', err);
     res.status(500).json({ error: 'Something went wrong, please try again.' });
   }
 });
 
-// GET /api/contact - admin only, list of messages
+// GET /api/contact/unread-count - admin only. Powers the sidebar notification
+// dot, so the admin knows a new message arrived without opening the page.
+router.get('/unread-count', adminAuth, requirePermission('customers:read'), async (req, res) => {
+  try {
+    const count = await ContactMessage.countDocuments({ status: 'new' });
+    res.json({ count });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch unread count' });
+  }
+});
+
+// GET /api/contact - admin only. Supports ?search= to filter by customer
+// name, email, subject, or message body.
 router.get('/', adminAuth, requirePermission('customers:read'), async (req, res) => {
   try {
-    const messages = await ContactMessage.find().sort({ createdAt: -1 });
+    const { search } = req.query;
+    let query = {};
+    if (search && String(search).trim()) {
+      const re = new RegExp(String(search).trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
+      query = { $or: [{ name: re }, { email: re }, { subject: re }, { message: re }] };
+    }
+    const messages = await ContactMessage.find(query).sort({ createdAt: -1 });
     res.json(messages.map((m) => m.toJSON()));
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch messages' });
@@ -100,6 +114,31 @@ router.patch('/:id', adminAuth, requirePermission('customers:read'), async (req,
     res.json(updated.toJSON());
   } catch (err) {
     res.status(500).json({ error: 'Failed to update message' });
+  }
+});
+
+// DELETE /api/contact/:id - admin only, delete one message
+router.delete('/:id', adminAuth, requirePermission('customers:read'), async (req, res) => {
+  try {
+    const deleted = await ContactMessage.findByIdAndDelete(req.params.id);
+    if (!deleted) return res.status(404).json({ error: 'Message not found' });
+    res.status(204).send();
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to delete message' });
+  }
+});
+
+// POST /api/contact/bulk-delete - admin only. Body: { ids: string[] }
+router.post('/bulk-delete', adminAuth, requirePermission('customers:read'), async (req, res) => {
+  try {
+    const { ids } = req.body;
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({ error: 'Provide an array of message ids to delete' });
+    }
+    const result = await ContactMessage.deleteMany({ _id: { $in: ids } });
+    res.json({ deletedCount: result.deletedCount });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to delete the selected messages' });
   }
 });
 

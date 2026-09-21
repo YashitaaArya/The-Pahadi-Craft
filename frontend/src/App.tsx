@@ -1,5 +1,7 @@
 import React, { useEffect, Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { HelmetProvider } from 'react-helmet-async';
+import SEO from './components/SEO';
 import ScrollToTop from './components/ScrollToTop';
 import Navbar from './components/Navbar';
 import Cart from './components/Cart';
@@ -204,11 +206,13 @@ function App() {
   }, []);
 
   return (
-    <Router>
-      <ScrollToTop />
-      <ToastContainer />
-      <AppRoutes />
-    </Router>
+    <HelmetProvider>
+      <Router>
+        <ScrollToTop />
+        <ToastContainer />
+        <AppRoutes />
+      </Router>
+    </HelmetProvider>
   );
 }
 
@@ -231,6 +235,11 @@ const HomePage = () => {
 
   return (
     <main className="pt-20">
+      <SEO
+        title="Handcrafted Candles & Artisan Crafts from Himachal"
+        description="Handcrafted candles, resin artifacts, bath salts, and spiritual products made by artisans in Himachal Pradesh. Shop scented candles, gift hampers, and wellness products online."
+        url="/"
+      />
       <Hero />
       <FeaturedProducts />
       <Collections />
