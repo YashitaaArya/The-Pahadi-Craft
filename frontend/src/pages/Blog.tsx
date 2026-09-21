@@ -160,6 +160,16 @@ const Blog: React.FC = () => {
           </>
         )}
 
+        {/* Write-for-us callout */}
+        <div className="bg-[#F5E9DA]/70 border border-[#E6DFD7] rounded-2xl p-6 md:p-8 text-center mb-10">
+          <h3 className="font-serif text-xl text-[#5A4232] mb-2">Love writing about craft, candles, or creativity?</h3>
+          <p className="text-[#7A6A5A] text-sm md:text-base max-w-2xl mx-auto">
+            If you're interested in writing good blogs for us, reach out through our{' '}
+            <Link to="/contact" className="text-[#C9A66B] hover:text-[#5A4232] underline font-medium">Contact Us</Link>{' '}
+            page and send us a message. We'll get back to you within 24-48 hours.
+          </p>
+        </div>
+
         {/* Newsletter - same real backend as the footer's */}
         <div className="bg-[#5A4232] rounded-3xl p-10 md:p-14 text-center">
           <h3 className="text-2xl md:text-3xl font-serif text-white mb-3">Never Miss a Story</h3>
