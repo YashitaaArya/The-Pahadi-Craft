@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import axios from 'axios';
 import {
   Menu,
   X,
@@ -14,7 +15,6 @@ import {
   BarChart3,
   Settings,
   ChevronDown,
-  Home,
   Image as ImageIcon,
   MessageCircle,
   Newspaper,
@@ -32,6 +32,26 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const { adminUser, adminLogout } = useAdminAuthStore();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [unreadMessages, setUnreadMessages] = useState(0);
+
+  // Polls for unread contact messages so the sidebar dot appears without
+  // needing a manual page refresh.
+  useEffect(() => {
+    const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+    const checkUnread = () => {
+      axios
+        .get(`${BASE_URL}/contact/unread-count`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` },
+        })
+        .then((res) => setUnreadMessages(res.data.count))
+        .catch(() => {
+          // Non-critical - the dot just won't show if this fails
+        });
+    };
+    checkUnread();
+    const interval = setInterval(checkUnread, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   const menuItems = [
     {
@@ -39,78 +59,91 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       icon: LayoutDashboard,
       path: '/admin',
       permission: 'analytics:read',
+      showDot: false,
     },
     {
       label: 'Products',
       icon: Package,
       path: '/admin/products',
       permission: 'products:read',
+      showDot: false,
     },
     {
       label: 'Orders',
       icon: ShoppingCart,
       path: '/admin/orders',
       permission: 'orders:read',
+      showDot: false,
     },
     {
       label: 'Customers',
       icon: Users,
       path: '/admin/customers',
       permission: 'customers:read',
+      showDot: false,
     },
     {
       label: 'Reviews',
       icon: MessageSquare,
       path: '/admin/reviews',
       permission: 'content:write',
+      showDot: false,
     },
     {
       label: 'Hero Slides',
       icon: ImageIcon,
       path: '/admin/banners',
       permission: 'content:write',
+      showDot: false,
     },
     {
       label: 'Collections',
       icon: Package,
       path: '/admin/collections',
       permission: 'content:write',
+      showDot: false,
     },
     {
       label: 'Messages',
       icon: MessageCircle,
       path: '/admin/messages',
       permission: 'customers:read',
+      showDot: unreadMessages > 0,
     },
     {
       label: 'Press & Recognition',
       icon: Newspaper,
       path: '/admin/press',
       permission: 'content:write',
+      showDot: false,
     },
     {
       label: 'About Page',
       icon: FileText,
       path: '/admin/about-page',
       permission: 'content:write',
+      showDot: false,
     },
     {
       label: 'Blog Posts',
       icon: Newspaper,
       path: '/admin/blog',
       permission: 'content:write',
+      showDot: false,
     },
     {
       label: 'Analytics',
       icon: BarChart3,
       path: '/admin/analytics',
       permission: 'analytics:read',
+      showDot: false,
     },
     {
       label: 'Admin Logins',
       icon: Settings,
       path: '/admin/settings',
       permission: 'admins:manage',
+      showDot: false,
     },
   ];
 
@@ -136,7 +169,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Top Navbar */}
+      {/* Top Navbar - the ONLY logout button now, top right, always visible */}
       <nav className="fixed top-0 left-0 right-0 bg-white border-b border-gray-200 z-40">
         <div className="flex items-center justify-between px-4 py-4 md:px-8">
           {/* Left side */}
@@ -177,7 +210,6 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
               </div>
             </div>
 
-            {/* Logout Button */}
             <button
               onClick={handleLogout}
               className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
@@ -189,7 +221,8 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
         </div>
       </nav>
 
-      {/* Sidebar */}
+      {/* Sidebar - no bottom logout button anymore, was overlapping nav items
+          once there were 12+ menu entries. Top-right logout is the only one. */}
       <motion.aside
         initial={false}
         animate={{ x: sidebarOpen ? 0 : -280 }}
@@ -220,7 +253,12 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
                   }
                 `}
               >
-                <Icon className={`w-5 h-5 ${active ? 'text-[#C9A66B]' : ''}`} />
+                <span className="relative flex-shrink-0">
+                  <Icon className={`w-5 h-5 ${active ? 'text-[#C9A66B]' : ''}`} />
+                  {item.showDot && (
+                    <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-blue-500 rounded-full border-2 border-white" />
+                  )}
+                </span>
                 <span className="text-sm">{item.label}</span>
                 {active && (
                   <ChevronDown className="w-4 h-4 ml-auto rotate-180" />
@@ -229,17 +267,6 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
             );
           })}
         </nav>
-
-        {/* Sidebar Footer */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200 bg-gray-50">
-          <button
-            onClick={handleLogout}
-            className="w-full flex items-center gap-2 px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors text-sm font-medium"
-          >
-            <LogOut className="w-4 h-4" />
-            Logout
-          </button>
-        </div>
       </motion.aside>
 
       {/* Overlay for mobile */}
@@ -259,7 +286,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
         <div className="sticky top-16 bg-white border-b border-gray-200 px-4 md:px-8 py-4 z-10">
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-serif text-[#5A4232]">Dashboard</h1>
-            <div className="text-xs text-gray-500">
+            <div className="text-xs text-gray-500 hidden sm:block">
               Last updated: {new Date().toLocaleTimeString()}
             </div>
           </div>

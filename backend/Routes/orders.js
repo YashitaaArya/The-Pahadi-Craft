@@ -38,6 +38,11 @@ router.get('/', adminAuth, requirePermission('orders:read'), async (req, res) =>
           country: json.country || '',
         },
         paymentStatus: json.paymentStatus === 'completed' ? 'paid' : json.paymentStatus,
+        // Payment reference IDs - what "paying" details actually refers to.
+        // Useful for admin to look up a transaction in the Razorpay dashboard
+        // if a customer disputes or asks about a specific payment.
+        razorpayOrderId: json.razorpay_order_id || '',
+        razorpayPaymentId: json.razorpay_payment_id || '',
         createdAt: json.createdAt,
         updatedAt: json.updatedAt,
         trackingNumber: json.trackingNumber || '',
@@ -124,4 +129,3 @@ router.get('/me/:uid',  async (req, res) => {
 
 // Single export for router
 module.exports = router;
-

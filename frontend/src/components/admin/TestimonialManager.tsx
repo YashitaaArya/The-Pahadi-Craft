@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, Trash2, Edit2, Star, Check, X as XIcon, UploadCloud, Loader2 } from 'lucide-react';
+import { Plus, Trash2, Edit2, Star, UploadCloud, Loader2 } from 'lucide-react';
 import {
   getAllTestimonialsAdmin,
   createTestimonial,
@@ -19,6 +19,8 @@ import {
   showError,
 } from './common';
 
+// Testimonials go live immediately - no approval step. Admin keeps full
+// edit/delete control instead, so the section stays genuine and organic.
 const emptyForm = { name: '', content: '', rating: 5, image: '', status: 'approved' as Testimonial['status'] };
 
 const TestimonialManager: React.FC = () => {
@@ -55,7 +57,7 @@ const TestimonialManager: React.FC = () => {
 
   const openEdit = (t: Testimonial) => {
     setEditing(t);
-    setForm({ name: t.name, content: t.content, rating: t.rating, image: t.image, status: t.status });
+    setForm({ name: t.name, content: t.content, rating: t.rating, image: t.image, status: 'approved' });
     setModalOpen(true);
   };
 
@@ -94,29 +96,23 @@ const TestimonialManager: React.FC = () => {
     }
   };
 
-  const quickSetStatus = async (t: Testimonial, status: Testimonial['status']) => {
-    try {
-      await updateTestimonial(t.id, { status });
-      load();
-    } catch (err: any) {
-      showError(err?.response?.data?.error || 'Failed to update status');
-    }
-  };
-
   if (loading) return <DashboardLoadingSkeleton />;
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
         <h2 className="text-2xl font-serif text-[#5A4232]">Testimonials</h2>
         <button
           onClick={openCreate}
-          className="flex items-center gap-2 px-4 py-2 bg-[#5A4232] text-white rounded-lg text-sm hover:bg-[#4a3628] transition-colors"
+          className="flex items-center justify-center gap-2 px-4 py-2 bg-[#5A4232] text-white rounded-lg text-sm hover:bg-[#4a3628] transition-colors"
         >
           <Plus size={16} />
           Add Testimonial
         </button>
       </div>
+      <p className="text-sm text-gray-500 mb-4 -mt-2">
+        Reviews go live immediately once added - no approval step needed.
+      </p>
 
       {testimonials.length === 0 ? (
         <EmptyState
@@ -133,44 +129,25 @@ const TestimonialManager: React.FC = () => {
               animate={{ opacity: 1, y: 0 }}
               className="bg-white rounded-lg shadow-sm p-5"
             >
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex items-center gap-3">
-                  {t.image ? (
-                    <img src={t.image} alt={t.name} className="w-10 h-10 rounded-full object-cover" />
-                  ) : (
-                    <div className="w-10 h-10 rounded-full bg-[#F5E9DA] flex items-center justify-center text-[#5A4232] font-medium">
-                      {t.name.charAt(0)}
-                    </div>
-                  )}
-                  <div>
-                    <p className="font-medium">{t.name}</p>
-                    <div className="flex items-center gap-0.5">
-                      {[...Array(5)].map((_, i) => (
-                        <Star key={i} size={12} fill={i < t.rating ? '#C9A66B' : 'none'} stroke="#C9A66B" />
-                      ))}
-                    </div>
+              <div className="flex items-center gap-3">
+                {t.image ? (
+                  <img src={t.image} alt={t.name} className="w-10 h-10 rounded-full object-cover" />
+                ) : (
+                  <div className="w-10 h-10 rounded-full bg-[#F5E9DA] flex items-center justify-center text-[#5A4232] font-medium">
+                    {t.name.charAt(0)}
+                  </div>
+                )}
+                <div>
+                  <p className="font-medium">{t.name}</p>
+                  <div className="flex items-center gap-0.5">
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} size={12} fill={i < t.rating ? '#C9A66B' : 'none'} stroke="#C9A66B" />
+                    ))}
                   </div>
                 </div>
-                <span className={`text-xs px-2 py-1 rounded-full capitalize ${
-                  t.status === 'approved' ? 'bg-green-100 text-green-700' :
-                  t.status === 'rejected' ? 'bg-red-100 text-red-700' :
-                  'bg-yellow-100 text-yellow-700'
-                }`}>
-                  {t.status}
-                </span>
               </div>
               <p className="text-sm text-gray-600 mt-3">{t.content}</p>
               <div className="flex items-center gap-2 mt-4 pt-3 border-t">
-                {t.status !== 'approved' && (
-                  <button onClick={() => quickSetStatus(t, 'approved')} className="text-green-600 hover:text-green-800 p-1.5" title="Approve">
-                    <Check size={16} />
-                  </button>
-                )}
-                {t.status !== 'rejected' && (
-                  <button onClick={() => quickSetStatus(t, 'rejected')} className="text-red-500 hover:text-red-700 p-1.5" title="Reject">
-                    <XIcon size={16} />
-                  </button>
-                )}
                 <button onClick={() => openEdit(t)} className="text-gray-500 hover:text-gray-700 p-1.5" title="Edit">
                   <Edit2 size={16} />
                 </button>
@@ -247,18 +224,6 @@ const TestimonialManager: React.FC = () => {
                 />
               </label>
             </div>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-            <select
-              className="input"
-              value={form.status}
-              onChange={(e) => setForm({ ...form, status: e.target.value as Testimonial['status'] })}
-            >
-              <option value="approved">Approved (shows on homepage)</option>
-              <option value="pending">Pending</option>
-              <option value="rejected">Rejected</option>
-            </select>
           </div>
           <div className="flex gap-3 pt-2">
             <button
