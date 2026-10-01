@@ -124,10 +124,15 @@ const OrderManager: React.FC = () => {
             </div>
 
             <div className="mt-6 pt-4 border-t">
-              <div className="flex justify-between items-center">
+              <div className="flex justify-between items-center flex-wrap gap-3">
                 <div>
                   <p className="text-sm text-gray-500">Total Amount</p>
                   <p className="text-xl font-medium">₹{order.total.toFixed(2)}</p>
+                  {(order as any).razorpayPaymentId && (
+                    <p className="text-xs text-gray-400 mt-1">
+                      Payment ID: <span className="font-mono">{(order as any).razorpayPaymentId}</span>
+                    </p>
+                  )}
                 </div>
                 <div className="flex flex-col items-end gap-2">
                   <select
