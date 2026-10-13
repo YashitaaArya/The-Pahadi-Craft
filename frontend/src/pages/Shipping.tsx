@@ -40,9 +40,9 @@ const Shipping: React.FC = () => {
 
           <InfoCard icon={<IndianRupee className="w-5 h-5 text-[#C9A66B]" />} title="Shipping Charges">
             <ul className="space-y-1">
-              <li>Standard Shipping: ₹50</li>
-              <li>Express Shipping: ₹100</li>
-              <li>Free Shipping on orders above ₹500</li>
+              <li>Standard Shipping: ₹50 per unit</li>
+              <li>Express Shipping: ₹100 per unit</li>
+              <li>*Shipping charges may vary as per the weight of final parcel.*</li>
             </ul>
           </InfoCard>
 
@@ -61,7 +61,7 @@ const Shipping: React.FC = () => {
           <h3 className="font-serif text-lg text-[#5A4232] mb-2">Pay on Delivery — Coming Soon</h3>
           <p className="text-gray-600 text-sm leading-relaxed">
             We're working on adding Cash/Pay on Delivery as a checkout option. For now, all orders are paid
-            securely online at checkout. We'll update this page the moment it's live.
+            securely online at checkout. For Pay on Delivery inquiries, reach out to us through our contact page.
           </p>
         </div>
 
